@@ -1103,7 +1103,6 @@
 
 
 
-
 pipeline {
     agent any
 
@@ -1114,17 +1113,12 @@ pipeline {
     options {
         timeout(time: 15, unit: 'MINUTES')
         skipDefaultCheckout(true)
-        // Add timestamps to console output
-        timestamps()
-        // Add ansi color support
-        ansiColor('xterm')
     }
 
     environment {
         NODE_ENV = 'production'
         MONGODB_URI = credentials('mongodb-uri')
         DOCKER_REGISTRY = 'tranvuquanganh87'
-        // Add npm config to improve reliability
         NPM_CONFIG_LOGLEVEL = 'verbose'
     }
 
@@ -1160,55 +1154,76 @@ pipeline {
                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
                     steps {
                         dir('server') {
-                            // Add timeout specifically for npm install
-                            timeout(time: 5, unit: 'MINUTES') {
-                                sh '''
-                                    # Clear npm cache first
-                                    npm cache clean --force
-                                    
-                                    # Show npm and node versions
-                                    echo "Node version: $(node -v)"
-                                    echo "NPM version: $(npm -v)"
-                                    
-                                    # Install with progress and timing information
-                                    npm ci --production=false --verbose 2>&1 | tee npm-install.log
-                                    
-                                    # Check installation status
-                                    if [ $? -eq 0 ]; then
+                            script {
+                                // Add current timestamp for tracking
+                                def startTime = new Date()
+                                echo "Starting backend npm install at ${startTime}"
+                                
+                                timeout(time: 5, unit: 'MINUTES') {
+                                    sh '''
+                                        # Clear npm cache first
+                                        npm cache clean --force
+                                        
+                                        # Show environment info
+                                        echo "=== Environment Information ==="
+                                        echo "Node version: $(node -v)"
+                                        echo "NPM version: $(npm -v)"
+                                        echo "Current directory: $(pwd)"
+                                        echo "================================"
+                                        
+                                        # Install with progress tracking
+                                        npm ci --production=false --verbose > npm-install.log 2>&1 || {
+                                            echo "npm install failed. Last 50 lines of log:"
+                                            tail -n 50 npm-install.log
+                                            exit 1
+                                        }
+                                        
                                         echo "NPM installation completed successfully"
-                                    else
-                                        echo "NPM installation failed"
-                                        exit 1
-                                    fi
-                                '''
+                                    '''
+                                }
+                                
+                                def endTime = new Date()
+                                echo "Finished backend npm install at ${endTime}"
+                                echo "Duration: ${endTime.time - startTime.time}ms"
                             }
                         }
                     }
                 }
+                
                 stage('Frontend Dependencies') {
                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
                     steps {
                         dir('client') {
-                            timeout(time: 5, unit: 'MINUTES') {
-                                sh '''
-                                    # Clear npm cache first
-                                    npm cache clean --force
-                                    
-                                    # Show npm and node versions
-                                    echo "Node version: $(node -v)"
-                                    echo "NPM version: $(npm -v)"
-                                    
-                                    # Install with progress and timing information
-                                    npm ci --production=false --verbose 2>&1 | tee npm-install.log
-                                    
-                                    # Check installation status
-                                    if [ $? -eq 0 ]; then
+                            script {
+                                def startTime = new Date()
+                                echo "Starting frontend npm install at ${startTime}"
+                                
+                                timeout(time: 5, unit: 'MINUTES') {
+                                    sh '''
+                                        # Clear npm cache first
+                                        npm cache clean --force
+                                        
+                                        # Show environment info
+                                        echo "=== Environment Information ==="
+                                        echo "Node version: $(node -v)"
+                                        echo "NPM version: $(npm -v)"
+                                        echo "Current directory: $(pwd)"
+                                        echo "================================"
+                                        
+                                        # Install with progress tracking
+                                        npm ci --production=false --verbose > npm-install.log 2>&1 || {
+                                            echo "npm install failed. Last 50 lines of log:"
+                                            tail -n 50 npm-install.log
+                                            exit 1
+                                        }
+                                        
                                         echo "NPM installation completed successfully"
-                                    else
-                                        echo "NPM installation failed"
-                                        exit 1
-                                    fi
-                                '''
+                                    '''
+                                }
+                                
+                                def endTime = new Date()
+                                echo "Finished frontend npm install at ${endTime}"
+                                echo "Duration: ${endTime.time - startTime.time}ms"
                             }
                         }
                     }
@@ -1216,7 +1231,7 @@ pipeline {
             }
         }
 
-        // Rest of the pipeline stages remain the same...
+        // Rest of your existing stages remain the same...
     }
 
     post {
@@ -1225,8 +1240,19 @@ pipeline {
                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
             """
-            // Archive npm logs
             archiveArtifacts artifacts: '**/npm-install.log', allowEmptyArchive: true
+        }
+        failure {
+            script {
+                echo "Build failed. Checking for npm logs..."
+                sh '''
+                    for log in $(find . -name npm-install.log); do
+                        echo "=== Contents of $log ==="
+                        cat $log
+                        echo "=== End of $log ==="
+                    done
+                '''
+            }
         }
     }
 }
