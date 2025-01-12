@@ -682,6 +682,13 @@ pipeline {
         nodejs 'NodeJS'
     }
 
+    options {
+        // Add timeout to entire pipeline
+        timeout(time: 15, unit: 'MINUTES')
+        // Skip default checkout
+        skipDefaultCheckout(true)
+    }
+
     environment {
         NODE_ENV = 'production'
         MONGODB_URI = credentials('mongodb-uri')
@@ -689,6 +696,13 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+
         stage('Detect Changes') {
             steps {
                 script {
@@ -800,14 +814,5 @@ pipeline {
                 docker rmi ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
             """
         }
-    }
-
-    options {
-        // Add timeout to entire pipeline
-        timeout(time: 15, unit: 'MINUTES')
-        // Skip default checkout
-        skipDefaultCheckout(true)
-        // Clean workspace before build
-        cleanWs()
     }
 }
