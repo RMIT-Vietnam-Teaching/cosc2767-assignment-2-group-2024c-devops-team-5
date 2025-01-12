@@ -683,9 +683,7 @@ pipeline {
     }
 
     options {
-        // Add timeout to entire pipeline
         timeout(time: 15, unit: 'MINUTES')
-        // Skip default checkout
         skipDefaultCheckout(true)
     }
 
@@ -698,7 +696,7 @@ pipeline {
     stages {
         stage('Cleanup Workspace') {
             steps {
-                cleanWs()
+                deleteDir()  // Using deleteDir instead of cleanWs
                 checkout scm
             }
         }
