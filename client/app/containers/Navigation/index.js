@@ -258,6 +258,7 @@ class Navigation extends React.PureComponent {
                       tag={ActiveLink}
                       to='/shop'
                       activeClassName='active'
+                      data-cy="navigate-to-shop"
                     >
                       Shop
                     </NavLink>

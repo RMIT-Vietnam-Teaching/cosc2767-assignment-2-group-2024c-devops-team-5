@@ -26,7 +26,7 @@ const ResetPasswordForm = props => {
   };
 
   return (
-    <div className='reset-password-form'>
+    <div className='reset-password-form' data-cy="reset-password-form">
       <form onSubmit={handleSubmit} noValidate>
         <Row>
           <Col xs='12' lg='6'>
@@ -40,6 +40,7 @@ const ResetPasswordForm = props => {
               onInputChange={(name, value) => {
                 resetPasswordChange(name, value);
               }}
+              data-cy="reset-password-input"
             />
           </Col>
           <Col xs='12' lg='6'>
@@ -53,12 +54,13 @@ const ResetPasswordForm = props => {
               onInputChange={(name, value) => {
                 resetPasswordChange(name, value);
               }}
+              data-cy="reset-password-confirm-input"
             />
           </Col>
         </Row>
         <hr />
         <div className='reset-actions'>
-          <Button type='submit' text='Reset Password' />
+          <Button type='submit' text='Reset Password' data-cy="reset-password-submit"/>
         </div>
       </form>
     </div>

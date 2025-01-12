@@ -136,6 +136,7 @@ class ProductPage extends React.PureComponent {
                           text='Remove From Bag'
                           className='bag-btn'
                           icon={<BagIcon />}
+                          data-cy='remove-from-bag-button'
                           onClick={() => handleRemoveFromCart(product)}
                         />
                       ) : (
@@ -147,6 +148,7 @@ class ProductPage extends React.PureComponent {
                           text='Add To Bag'
                           className='bag-btn'
                           icon={<BagIcon />}
+                          data-cy='add-to-bag-button'
                           onClick={() => handleAddToCart(product)}
                         />
                       )}

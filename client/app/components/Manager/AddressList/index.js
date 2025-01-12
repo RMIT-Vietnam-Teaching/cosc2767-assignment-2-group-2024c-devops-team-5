@@ -20,6 +20,7 @@ const AddressList = props => {
           to={`/dashboard/address/edit/${address._id}`}
           key={index}
           className='d-block'
+          data-cy="address-item"
         >
           <div className='d-flex align-items-center mb-3 address-box'>
             <div className='mx-3'>

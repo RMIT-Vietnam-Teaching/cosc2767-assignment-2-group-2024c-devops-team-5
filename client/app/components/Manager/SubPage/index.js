@@ -12,7 +12,7 @@ const SubPage = props => {
   const { title, actionTitle, handleAction, children } = props;
 
   return (
-    <div className='sub-page'>
+    <div className='sub-page' data-cy="sub-page">
       <div className='subpage-header'>
         <h3 className='mb-0'>{title}</h3>
         {actionTitle && (

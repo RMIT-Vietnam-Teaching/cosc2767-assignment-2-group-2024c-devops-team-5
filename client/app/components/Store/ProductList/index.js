@@ -16,7 +16,7 @@ const ProductList = props => {
   return (
     <div className='product-list'>
       {products.map((product, index) => (
-        <div key={index} className='mb-3 mb-md-0'>
+        <div key={index} className='mb-3 mb-md-0' data-cy='product-list-item'>
           <div className='product-container'>
             <div className='item-box'>
               <div className='add-wishlist-box'>

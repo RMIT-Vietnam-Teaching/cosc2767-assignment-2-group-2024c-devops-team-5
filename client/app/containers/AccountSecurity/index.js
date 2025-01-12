@@ -24,9 +24,9 @@ class AccountSecurity extends React.PureComponent {
     } = this.props;
 
     return (
-      <div className='account-security'>
+      <div className='account-security' data-cy="account-security">
         <SubPage title={'Account Security'} isMenuOpen={null}>
-          <div className='reset-form'>
+          <div className='reset-form' data-cy="reset-form">
             <h4>Reset Password</h4>
             <ResetPasswordForm
               resetFormData={resetFormData}

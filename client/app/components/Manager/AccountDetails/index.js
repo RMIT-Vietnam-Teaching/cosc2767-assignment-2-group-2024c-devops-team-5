@@ -22,10 +22,10 @@ const AccountDetails = props => {
   };
 
   return (
-    <div className='account-details'>
+    <div className='account-details' data-cy="account-details">
       <div className='info'>
         <div className='desc'>
-          <p className='one-line-ellipsis mr-3'>
+          <p className='one-line-ellipsis mr-3' data-cy="account-details-provider-email">
             {user.provider === EMAIL_PROVIDER.Email ? (
               user.email
             ) : (
@@ -49,6 +49,7 @@ const AccountDetails = props => {
               onInputChange={(name, value) => {
                 accountChange(name, value);
               }}
+              data-cy="account-details-firstName"
             />
           </Col>
           <Col xs='12' md='6'>
@@ -61,6 +62,7 @@ const AccountDetails = props => {
               onInputChange={(name, value) => {
                 accountChange(name, value);
               }}
+              data-cy="account-details-lastName"
             />
           </Col>
           {/* TODO: update email feature to be added instead form change */}
@@ -86,12 +88,13 @@ const AccountDetails = props => {
               onInputChange={(name, value) => {
                 accountChange(name, value);
               }}
+              data-cy="account-details-phoneNumber"
             />
           </Col>
         </Row>
         <hr />
         <div className='profile-actions'>
-          <Button type='submit' variant='secondary' text='Save changes' />
+          <Button type='submit' variant='secondary' text='Save changes' data-cy="account-details-submit"/>
         </div>
       </form>
     </div>

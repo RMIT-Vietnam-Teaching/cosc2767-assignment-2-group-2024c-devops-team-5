@@ -23,6 +23,7 @@ const Checkout = props => {
           <Button
             variant='primary'
             text='Place Order'
+            data-cy='place-order-button'
             onClick={() => placeOrder()}
           />
         ) : (
