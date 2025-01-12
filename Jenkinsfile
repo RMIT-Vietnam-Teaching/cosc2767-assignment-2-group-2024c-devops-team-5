@@ -560,8 +560,6 @@ pipeline {
                         dir('server') {
                             sh '''
                                 npm install
-                                npm install --save mongoose
-                                npm install --save-dev mongodb-memory-server
                                 npm install --save-dev jest
                                 chmod +x node_modules/.bin/*
                             '''
