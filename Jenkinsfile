@@ -560,8 +560,8 @@ pipeline {
                         dir('server') {
                             sh '''
                                 npm install
-                                npm install --save-dev jest
-                                chmod +x node_modules/.bin/*
+                                // npm install --save-dev jest
+                                // chmod +x node_modules/.bin/*
                             '''
                         }
                     }
