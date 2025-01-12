@@ -595,7 +595,8 @@ pipeline {
                                 echo "NPM version:"
                                 npm -v
                                 echo "Running tests..."
-                                NODE_ENV=test npm run test -- --verbose
+                                // NODE_ENV=test npm run test -- --verbose
+                                npm test
                             '''
                         }
                     }
