@@ -876,10 +876,10 @@ pipeline {
                             // Using ci and specific dependencies
                             sh '''
                                 npm ci --production=false
-                                # Update deprecated packages
-                                npm install uuid@latest --save
-                                npm install @mailgun/mailgun-js@latest --save
-                                npm install axios@latest --save # replacement for request
+                                // # Update deprecated packages
+                                // npm install uuid@latest --save
+                                // npm install @mailgun/mailgun-js@latest --save
+                                // npm install axios@latest --save # replacement for request
                             '''
                         }
                     }
