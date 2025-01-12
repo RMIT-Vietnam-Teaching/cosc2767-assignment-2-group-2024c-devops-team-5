@@ -823,6 +823,287 @@
 
 
 
+// pipeline {
+//     agent any
+
+//     tools {
+//         nodejs 'NodeJS'
+//     }
+
+//     options {
+//         timeout(time: 15, unit: 'MINUTES')  // Increased to 30 minutes
+//         skipDefaultCheckout(true)
+//     }
+
+//     environment {
+//         NODE_ENV = 'production'
+//         MONGODB_URI = credentials('mongodb-uri')
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//     }
+
+//     stages {
+//         stage('Cleanup Workspace') {
+//             steps {
+//                 deleteDir()
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     env.BACKEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^server/ || true',
+//                         returnStatus: true
+//                     ) == 0
+//                     env.FRONTEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^client/ || true',
+//                         returnStatus: true
+//                     ) == 0
+                    
+//                     echo "Backend changed: ${env.BACKEND_CHANGED}"
+//                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+//                 }
+//             }
+//         }
+
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             // Using ci and specific dependencies
+//                             sh '''
+//                                 npm ci --production=false
+//                                 // # Update deprecated packages
+//                                 // npm install uuid@latest --save
+//                                 // npm install @mailgun/mailgun-js@latest --save
+//                                 // npm install axios@latest --save # replacement for request
+//                             '''
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm ci --production=false'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Run Tests') {
+//             parallel {
+//                 stage('Backend Tests') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             sh '''
+//                                 #!/bin/bash
+//                                 echo "Node version: $(node -v)"
+//                                 echo "NPM version: $(npm -v)"
+//                                 NODE_ENV=test npm test
+//                             '''
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Tests') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm run cy:run'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Build and Push') {
+//             parallel {
+//                 stage('Backend') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//                                     sh '''
+//                                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+//                                         docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+//                                         docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
+//                                     '''
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             script {
+//                                 withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//                                     sh '''
+//                                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+//                                         npm run build
+//                                         docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+//                                         docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
+//                                     '''
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         always {
+//             sh """
+//                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//         }
+//     }
+// }
+
+
+
+
+// pipeline {
+//     agent any
+
+//     tools {
+//         nodejs 'NodeJS'
+//     }
+
+//     options {
+//         timeout(time: 15, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//         // Add timestamps to console output
+//         timestamps()
+//         // Add ansi color support
+//         ansiColor('xterm')
+//     }
+
+//     environment {
+//         NODE_ENV = 'production'
+//         MONGODB_URI = credentials('mongodb-uri')
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         // Add npm config to improve reliability
+//         NPM_CONFIG_LOGLEVEL = 'verbose'
+//     }
+
+//     stages {
+//         stage('Cleanup Workspace') {
+//             steps {
+//                 deleteDir()
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     env.BACKEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^server/ || true',
+//                         returnStatus: true
+//                     ) == 0
+//                     env.FRONTEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^client/ || true',
+//                         returnStatus: true
+//                     ) == 0
+                    
+//                     echo "Backend changed: ${env.BACKEND_CHANGED}"
+//                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+//                 }
+//             }
+//         }
+
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             // Add timeout specifically for npm install
+//                             timeout(time: 5, unit: 'MINUTES') {
+//                                 sh '''
+//                                     # Clear npm cache first
+//                                     npm cache clean --force
+                                    
+//                                     # Show npm and node versions
+//                                     echo "Node version: $(node -v)"
+//                                     echo "NPM version: $(npm -v)"
+                                    
+//                                     # Install with progress and timing information
+//                                     npm ci --production=false --verbose 2>&1 | tee npm-install.log
+                                    
+//                                     # Check installation status
+//                                     if [ $? -eq 0 ]; then
+//                                         echo "NPM installation completed successfully"
+//                                     else
+//                                         echo "NPM installation failed"
+//                                         exit 1
+//                                     fi
+//                                 '''
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             timeout(time: 5, unit: 'MINUTES') {
+//                                 sh '''
+//                                     # Clear npm cache first
+//                                     npm cache clean --force
+                                    
+//                                     # Show npm and node versions
+//                                     echo "Node version: $(node -v)"
+//                                     echo "NPM version: $(npm -v)"
+                                    
+//                                     # Install with progress and timing information
+//                                     npm ci --production=false --verbose 2>&1 | tee npm-install.log
+                                    
+//                                     # Check installation status
+//                                     if [ $? -eq 0 ]; then
+//                                         echo "NPM installation completed successfully"
+//                                     else
+//                                         echo "NPM installation failed"
+//                                         exit 1
+//                                     fi
+//                                 '''
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         // Rest of the pipeline stages remain the same...
+//     }
+
+//     post {
+//         always {
+//             sh """
+//                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//             // Archive npm logs
+//             archiveArtifacts artifacts: '**/npm-install.log', allowEmptyArchive: true
+//         }
+//     }
+// }
+
+
+
+
+
 pipeline {
     agent any
 
@@ -831,14 +1112,20 @@ pipeline {
     }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')  // Increased to 30 minutes
+        timeout(time: 15, unit: 'MINUTES')
         skipDefaultCheckout(true)
+        // Add timestamps to console output
+        timestamps()
+        // Add ansi color support
+        ansiColor('xterm')
     }
 
     environment {
         NODE_ENV = 'production'
         MONGODB_URI = credentials('mongodb-uri')
         DOCKER_REGISTRY = 'tranvuquanganh87'
+        // Add npm config to improve reliability
+        NPM_CONFIG_LOGLEVEL = 'verbose'
     }
 
     stages {
@@ -873,14 +1160,28 @@ pipeline {
                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
                     steps {
                         dir('server') {
-                            // Using ci and specific dependencies
-                            sh '''
-                                npm ci --production=false
-                                // # Update deprecated packages
-                                // npm install uuid@latest --save
-                                // npm install @mailgun/mailgun-js@latest --save
-                                // npm install axios@latest --save # replacement for request
-                            '''
+                            // Add timeout specifically for npm install
+                            timeout(time: 5, unit: 'MINUTES') {
+                                sh '''
+                                    # Clear npm cache first
+                                    npm cache clean --force
+                                    
+                                    # Show npm and node versions
+                                    echo "Node version: $(node -v)"
+                                    echo "NPM version: $(npm -v)"
+                                    
+                                    # Install with progress and timing information
+                                    npm ci --production=false --verbose 2>&1 | tee npm-install.log
+                                    
+                                    # Check installation status
+                                    if [ $? -eq 0 ]; then
+                                        echo "NPM installation completed successfully"
+                                    else
+                                        echo "NPM installation failed"
+                                        exit 1
+                                    fi
+                                '''
+                            }
                         }
                     }
                 }
@@ -888,76 +1189,34 @@ pipeline {
                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
                     steps {
                         dir('client') {
-                            sh 'npm ci --production=false'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            parallel {
-                stage('Backend Tests') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            sh '''
-                                #!/bin/bash
-                                echo "Node version: $(node -v)"
-                                echo "NPM version: $(npm -v)"
-                                NODE_ENV=test npm test
-                            '''
-                        }
-                    }
-                }
-                stage('Frontend Tests') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm run cy:run'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build and Push') {
-            parallel {
-                stage('Backend') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            script {
-                                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                                    sh '''
-                                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                        docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
-                                        docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('Frontend') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            script {
-                                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                                    sh '''
-                                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                        npm run build
-                                        docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
-                                        docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
-                                    '''
-                                }
+                            timeout(time: 5, unit: 'MINUTES') {
+                                sh '''
+                                    # Clear npm cache first
+                                    npm cache clean --force
+                                    
+                                    # Show npm and node versions
+                                    echo "Node version: $(node -v)"
+                                    echo "NPM version: $(npm -v)"
+                                    
+                                    # Install with progress and timing information
+                                    npm ci --production=false --verbose 2>&1 | tee npm-install.log
+                                    
+                                    # Check installation status
+                                    if [ $? -eq 0 ]; then
+                                        echo "NPM installation completed successfully"
+                                    else
+                                        echo "NPM installation failed"
+                                        exit 1
+                                    fi
+                                '''
                             }
                         }
                     }
                 }
             }
         }
+
+        // Rest of the pipeline stages remain the same...
     }
 
     post {
@@ -966,6 +1225,8 @@ pipeline {
                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
             """
+            // Archive npm logs
+            archiveArtifacts artifacts: '**/npm-install.log', allowEmptyArchive: true
         }
     }
 }
