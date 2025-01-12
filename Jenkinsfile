@@ -683,7 +683,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 5, unit: 'MINUTES')
         skipDefaultCheckout(true)
     }
 
@@ -728,7 +728,7 @@ pipeline {
                         stage('Install Backend') {
                             steps {
                                 dir('server') {
-                                    sh 'npm ci'  // Faster than npm install
+                                    sh 'npm install'  // Faster than npm install
                                 }
                             }
                         }
@@ -754,7 +754,7 @@ pipeline {
                         stage('Install Frontend') {
                             steps {
                                 dir('client') {
-                                    sh 'npm ci'  // Faster than npm install
+                                    sh 'npm instal'  // Faster than npm install
                                 }
                             }
                         }
