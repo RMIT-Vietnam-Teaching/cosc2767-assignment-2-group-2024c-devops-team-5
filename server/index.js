@@ -3,7 +3,6 @@ require('dotenv').config();
 
 // Import required modules
 const express = require('express');
-const chalk = require('chalk');
 const cors = require('cors');
 const helmet = require('helmet');
 
@@ -52,9 +51,10 @@ app.use(routes);
 // Start the server and listen on the specified port
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(
-    `${chalk.green('✓')} ${chalk.blue(
-      `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
-    )}`
+    // `${chalk.green('✓')} ${chalk.blue(
+    //   `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
+    // )}`
+     `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
   );
 });
 
