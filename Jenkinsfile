@@ -9,6 +9,10 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('docker-credentials')
     }
 
+        options {
+        timeout(time: 15, unit: 'MINUTES')
+        skipDefaultCheckout(true)
+    }
     stages {
         stage('Checkout') {
             steps {
