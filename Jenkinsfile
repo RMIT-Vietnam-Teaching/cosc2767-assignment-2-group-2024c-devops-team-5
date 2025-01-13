@@ -2155,9 +2155,8 @@ pipeline {
                 echo "Installing backend dependencies..."
                 npm install 
 
-                 echo "Installing mongodb-memory-server (specific version)..."
+                echo "Installing mongodb-memory-server (specific version)..."
                 npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
-                npm install supertest --save-dev || (echo "Installation failed!" && exit 1)
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 
                 echo "Verifying mongodb-memory-server installation..."
@@ -2165,7 +2164,6 @@ pipeline {
 
                 echo "Verifying supertest installation..."
                 npm list supertest || (echo "supertest not installed!" && exit 1)
-                
                             '''
                         }
                     }
