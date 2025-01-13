@@ -2127,65 +2127,82 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            parallel {
-                stage('Backend Dependencies') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            sh '''
-                                # Install all dependencies
-                                npm install
-                                
-                                # Explicitly install test dependencies
-                                npm install --save-dev mongodb-memory-server@latest
-                                npm install --save mongoose@latest
-                                npm install --save-dev jest@latest
-                                
-                                # Add execute permissions
-                                chmod +x node_modules/.bin/*
-                            '''
-                        }
-                    }
-                }
-                stage('Frontend Dependencies') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm install'
-                        }
-                    }
+    parallel {
+        stage('Backend Dependencies') {
+            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            steps {
+                dir('server') {
+                    sh '''
+                        # Remove node_modules and package-lock.json for clean install
+                        rm -rf node_modules package-lock.json
+
+                        # Install base dependencies
+                        npm install
+
+                        # Install test dependencies explicitly
+                        npm install --save-dev jest@latest
+                        npm install --save mongoose@latest
+                        npm install --save-dev mongodb-memory-server@latest
+                        
+                        # Verify installations
+                        echo "Checking installed packages:"
+                        npm list jest
+                        npm list mongoose
+                        npm list mongodb-memory-server
+                        
+                        # Add execute permissions
+                        chmod +x node_modules/.bin/*
+                    '''
                 }
             }
         }
+        stage('Frontend Dependencies') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('client') {
+                    sh '''
+                        rm -rf node_modules package-lock.json
+                        npm install
+                    '''
+                }
+            }
+        }
+    }
+}
 
         stage('Run Tests') {
-            parallel {
-                stage('Backend Tests') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            sh '''
-                                #!/bin/bash
-                                echo "Node version: $(node -v)"
-                                echo "NPM version: $(npm -v)"
-                                echo "MongoDB Memory Server version:"
-                                npm list mongodb-memory-server
-                                echo "Running tests..."
-                                NODE_ENV=test npm test
-                            '''
-                        }
-                    }
-                }
-                stage('Frontend Tests') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm run cy:run'
-                        }
-                    }
+    parallel {
+        stage('Backend Tests') {
+            when { environment name: 'BACKEND_CHANGED', value: 'true' }
+            steps {
+                dir('server') {
+                    sh '''
+                        #!/bin/bash
+                        echo "Node version: $(node -v)"
+                        echo "NPM version: $(npm -v)"
+                        echo "MongoDB Memory Server version:"
+                        npm list mongodb-memory-server
+                        echo "Mongoose version:"
+                        npm list mongoose
+                        echo "Jest version:"
+                        npm list jest
+                        
+                        echo "Running tests..."
+                        NODE_ENV=test npx jest --verbose
+                    '''
                 }
             }
         }
+        stage('Frontend Tests') {
+            when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+            steps {
+                dir('client') {
+                    sh 'npm run cy:run'
+                }
+            }
+        }
+    }
+}
 
         stage('Build') {
             parallel {
