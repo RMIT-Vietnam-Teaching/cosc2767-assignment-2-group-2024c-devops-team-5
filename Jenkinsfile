@@ -1264,11 +1264,194 @@
 
 
 
+// pipeline {
+//     agent any
+    
+//     tools {
+//         nodejs 'NodeJS' // Make sure this matches your Jenkins NodeJS installation name
+//     }
+
+//     environment {
+//         MONGODB_URI = credentials('mongodb-uri')
+//         NODE_ENV = 'production'
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         DOCKER_CREDENTIALS = credentials('docker-credentials')
+//         // Add PATH to include npm
+//         PATH = "${env.PATH}:/usr/local/bin"
+//     }
+
+//     options {
+//         timeout(time: 30, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//     }
+
+//     stages {
+//         stage('Verify Tools') {
+//             steps {
+//                 sh '''
+//                     echo "Node version: $(node -v)"
+//                     echo "NPM version: $(npm -v)"
+//                     echo "Current PATH: $PATH"
+//                 '''
+//             }
+//         }
+
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     def changes = []
+//                     try {
+//                         changes = sh(
+//                             script: 'git diff --name-only HEAD^ HEAD',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     } catch (err) {
+//                         changes = sh(
+//                             script: 'git ls-files',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     }
+
+//                     env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+//                     env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                    
+//                     echo "Backend changed: ${env.BACKEND_CHANGED}"
+//                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+//                 }
+//             }
+//         }
+
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 try {
+//                                     sh '''
+//                                         echo "Installing backend dependencies..."
+//                                         npm install
+//                                         echo "Backend dependencies installed successfully"
+//                                          echo "Installing mongoose..."
+//                                         npm install mongoose
+//                                          echo "mongooseinstalled successfully"
+//                                     '''
+//                                 } catch (err) {
+//                                     echo "Error installing backend dependencies: ${err}"
+//                                     throw err
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             script {
+//                                 try {
+//                                     sh '''
+//                                         echo "Installing frontend dependencies..."
+//                                         npm install
+//                                         echo "Frontend dependencies installed successfully"
+//                                     '''
+//                                 } catch (err) {
+//                                     echo "Error installing frontend dependencies: ${err}"
+//                                     throw err
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//                 stage('Run Tests') {
+//             parallel {
+//                 stage('Backend Tests') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             sh 'npm test'
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Tests') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm run cy:run'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//          stage('Build') {
+//             parallel {
+//                 stage('Build Backend') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 // Build Docker image for backend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Build Frontend') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             // Build frontend assets
+//                             sh 'npm run build'
+//                             script {
+//                                 // Build Docker image for frontend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         // Rest of your stages remain the same...
+//     }
+
+//     post {
+//         always {
+//             sh """
+//                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//         }
+//         failure {
+//             echo 'Pipeline failed!'
+//         }
+//     }
+// }
+
+
+
 pipeline {
     agent any
     
     tools {
-        nodejs 'NodeJS' // Make sure this matches your Jenkins NodeJS installation name
+        nodejs 'NodeJS'
     }
 
     environment {
@@ -1276,53 +1459,78 @@ pipeline {
         NODE_ENV = 'production'
         DOCKER_REGISTRY = 'tranvuquanganh87'
         DOCKER_CREDENTIALS = credentials('docker-credentials')
-        // Add PATH to include npm
         PATH = "${env.PATH}:/usr/local/bin"
+        // Add error handling environment variable
+        ERROR_FOUND = 'false'
     }
 
     options {
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
         skipDefaultCheckout(true)
+        // Add fail-fast option
+        parallelsAlwaysFailFast()
     }
 
     stages {
         stage('Verify Tools') {
             steps {
-                sh '''
-                    echo "Node version: $(node -v)"
-                    echo "NPM version: $(npm -v)"
-                    echo "Current PATH: $PATH"
-                '''
+                script {
+                    try {
+                        sh '''
+                            echo "Node version: $(node -v)"
+                            echo "NPM version: $(npm -v)"
+                            echo "Current PATH: $PATH"
+                        '''
+                    } catch (Exception e) {
+                        echo "Failed to verify tools: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Pipeline failed at tool verification")
+                    }
+                }
             }
         }
 
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    try {
+                        checkout scm
+                    } catch (Exception e) {
+                        echo "Failed to checkout code: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Pipeline failed at checkout")
+                    }
+                }
             }
         }
 
         stage('Detect Changes') {
             steps {
                 script {
-                    def changes = []
                     try {
-                        changes = sh(
-                            script: 'git diff --name-only HEAD^ HEAD',
-                            returnStdout: true
-                        ).trim().split('\n')
-                    } catch (err) {
-                        changes = sh(
-                            script: 'git ls-files',
-                            returnStdout: true
-                        ).trim().split('\n')
-                    }
+                        def changes = []
+                        try {
+                            changes = sh(
+                                script: 'git diff --name-only HEAD^ HEAD',
+                                returnStdout: true
+                            ).trim().split('\n')
+                        } catch (err) {
+                            changes = sh(
+                                script: 'git ls-files',
+                                returnStdout: true
+                            ).trim().split('\n')
+                        }
 
-                    env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
-                    env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
-                    
-                    echo "Backend changed: ${env.BACKEND_CHANGED}"
-                    echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+                        env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+                        env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                        
+                        echo "Backend changed: ${env.BACKEND_CHANGED}"
+                        echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+                    } catch (Exception e) {
+                        echo "Failed to detect changes: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Pipeline failed at change detection")
+                    }
                 }
             }
         }
@@ -1330,41 +1538,56 @@ pipeline {
         stage('Install Dependencies') {
             parallel {
                 stage('Backend Dependencies') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    when { 
+                        allOf {
+                            environment name: 'BACKEND_CHANGED', value: 'true'
+                            environment name: 'ERROR_FOUND', value: 'false'
+                        }
+                    }
                     steps {
                         dir('server') {
                             script {
                                 try {
                                     sh '''
                                         echo "Installing backend dependencies..."
-                                        npm install
+                                        npm install || exit 1
                                         echo "Backend dependencies installed successfully"
-                                         echo "Installing mongoose..."
-                                        npm install mongoose
-                                         echo "mongooseinstalled successfully"
+                                        echo "Installing mongoose..."
+                                        npm install mongoose || exit 1
+                                        echo "mongoose installed successfully"
                                     '''
-                                } catch (err) {
-                                    echo "Error installing backend dependencies: ${err}"
-                                    throw err
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Failed to install backend dependencies: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend dependency installation")
                                 }
                             }
                         }
                     }
                 }
+                
                 stage('Frontend Dependencies') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    when { 
+                        allOf {
+                            environment name: 'FRONTEND_CHANGED', value: 'true'
+                            environment name: 'ERROR_FOUND', value: 'false'
+                        }
+                    }
                     steps {
                         dir('client') {
                             script {
                                 try {
                                     sh '''
                                         echo "Installing frontend dependencies..."
-                                        npm install
+                                        npm install || exit 1
                                         echo "Frontend dependencies installed successfully"
                                     '''
-                                } catch (err) {
-                                    echo "Error installing frontend dependencies: ${err}"
-                                    throw err
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Failed to install frontend dependencies: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend dependency installation")
                                 }
                             }
                         }
@@ -1373,74 +1596,116 @@ pipeline {
             }
         }
 
-                stage('Run Tests') {
+        stage('Run Tests') {
+            when { environment name: 'ERROR_FOUND', value: 'false' }
             parallel {
                 stage('Backend Tests') {
                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
                     steps {
                         dir('server') {
-                            sh 'npm test'
+                            script {
+                                try {
+                                    sh 'npm test || exit 1'
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Backend tests failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend tests")
+                                }
+                            }
                         }
                     }
                 }
+                
                 stage('Frontend Tests') {
                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
                     steps {
                         dir('client') {
-                            sh 'npm run cy:run'
+                            script {
+                                try {
+                                    sh 'npm run cy:run || exit 1'
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Frontend tests failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend tests")
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-         stage('Build') {
+        stage('Build') {
+            when { environment name: 'ERROR_FOUND', value: 'false' }
             parallel {
                 stage('Build Backend') {
                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
                     steps {
                         dir('server') {
                             script {
-                                // Build Docker image for backend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
-                                """
+                                try {
+                                    sh """
+                                        docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} . || exit 1
+                                        docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest || exit 1
+                                    """
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Backend build failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend build")
+                                }
                             }
                         }
                     }
                 }
+                
                 stage('Build Frontend') {
                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
                     steps {
                         dir('client') {
-                            // Build frontend assets
-                            sh 'npm run build'
                             script {
-                                // Build Docker image for frontend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
-                                """
+                                try {
+                                    sh '''
+                                        npm run build || exit 1
+                                    '''
+                                    sh """
+                                        docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} . || exit 1
+                                        docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest || exit 1
+                                    """
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Frontend build failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend build")
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
-        // Rest of your stages remain the same...
     }
 
     post {
         always {
-            sh """
-                docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-                docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-            """
+            script {
+                try {
+                    sh """
+                        docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+                        docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+                    """
+                } catch (Exception e) {
+                    echo "Warning: Failed to cleanup docker images: ${e.getMessage()}"
+                }
+            }
         }
         failure {
-            echo 'Pipeline failed!'
+            script {
+                echo "Pipeline failed! Check the logs above for detailed error information."
+                // Optional: Add notification steps here
+            }
         }
     }
 }
