@@ -1390,6 +1390,42 @@ pipeline {
                 }
             }
         }
+
+         stage('Build') {
+            parallel {
+                stage('Build Backend') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            script {
+                                // Build Docker image for backend
+                                sh """
+                                docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+                                """
+                            }
+                        }
+                    }
+                }
+                stage('Build Frontend') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            // Build frontend assets
+                            sh 'npm run build'
+                            script {
+                                // Build Docker image for frontend
+                                sh """
+                                docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Rest of your stages remain the same...
     }
 
