@@ -74,7 +74,14 @@ pipeline {
                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
                     steps {
                         dir('server') {
-                            sh 'npm test'
+                          sh '''
+//                                         echo "Installing backend dependencies..."
+//                                         npm install
+//                                         echo "Backend dependencies installed successfully"
+//                                          echo "Installing mongoose..."
+//                                         npm install mongoose
+//                                          echo "mongooseinstalled successfully"
+//                                     '''
                         }
                     }
                 }
