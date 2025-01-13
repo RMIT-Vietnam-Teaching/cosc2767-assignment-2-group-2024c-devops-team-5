@@ -1370,6 +1370,26 @@ pipeline {
             }
         }
 
+                stage('Run Tests') {
+            parallel {
+                stage('Backend Tests') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            sh 'npm test'
+                        }
+                    }
+                }
+                stage('Frontend Tests') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm run cy:run'
+                        }
+                    }
+                }
+            }
+        }
         // Rest of your stages remain the same...
     }
 
