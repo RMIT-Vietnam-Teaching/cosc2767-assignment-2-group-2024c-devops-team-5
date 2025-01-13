@@ -1,135 +1,135 @@
-pipeline {
-    agent any
-    tools {
-        nodejs 'NodeJS'
-    }
+// pipeline {
+//     agent any
+//     tools {
+//         nodejs 'NodeJS'
+//     }
 
-    environment {
-        MONGODB_URI = credentials('mongodb-uri')
-        NODE_ENV = 'production'
-        // Add your Docker registry credentials if needed
-        DOCKER_REGISTRY = 'tranvuquanganh87'
-        DOCKER_CREDENTIALS = credentials('docker-credentials')
-    }
+//     environment {
+//         MONGODB_URI = credentials('mongodb-uri')
+//         NODE_ENV = 'production'
+//         // Add your Docker registry credentials if needed
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         DOCKER_CREDENTIALS = credentials('docker-credentials')
+//     }
 
-        options {
-        timeout(time: 15, unit: 'MINUTES')
-        skipDefaultCheckout(true)
-    }
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+//         options {
+//         timeout(time: 15, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//     }
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
 
-        stage('Detect Changes') {
-            steps {
-                script {
-                    // Get changed files between current and previous successful buåååååååild
-                    def changes = []
-                    try {
-                        changes = sh(
-                            script: 'git diff --name-only HEAD^ HEAD',
-                            returnStdout: true
-                        ).trim().split('\n')
-                    } catch (err) {
-                        // If first commit or other git errors, assume all files changed
-                        changes = sh(
-                            script: 'git ls-files',
-                            returnStdout: true
-                        ).trim().split('\n')
-                    }
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     // Get changed files between current and previous successful buåååååååild
+//                     def changes = []
+//                     try {
+//                         changes = sh(
+//                             script: 'git diff --name-only HEAD^ HEAD',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     } catch (err) {
+//                         // If first commit or other git errors, assume all files changed
+//                         changes = sh(
+//                             script: 'git ls-files',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     }
 
-                    env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
-                    env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
-                }
-            }
-        }
+//                     env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+//                     env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+//                 }
+//             }
+//         }
 
-        stage('Install Dependencies') {
-            parallel {
-                stage('Backend Dependencies') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            sh 'npm install'
-                        }
-                    }
-                }
-                stage('Frontend Dependencies') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm install'
-                        }
-                    }
-                }
-            }
-        }
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             sh 'npm install'
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm install'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-        stage('Run Tests') {
-            parallel {
-                stage('Backend Tests') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                          sh '''
-//                                         echo "Installing backend dependencies..."
-//                                         npm install
-//                                         echo "Backend dependencies installed successfully"
-//                                          echo "Installing mongoose..."
-//                                         npm install mongoose
-//                                          echo "mongooseinstalled successfully"
-//                                     '''
-                        }
-                    }
-                }
-                stage('Frontend Tests') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm run cy:run'
-                        }
-                    }
-                }
-            }
-        }
+//         stage('Run Tests') {
+//             parallel {
+//                 stage('Backend Tests') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                           sh '''
+// //                                         echo "Installing backend dependencies..."
+// //                                         npm install
+// //                                         echo "Backend dependencies installed successfully"
+// //                                          echo "Installing mongoose..."
+// //                                         npm install mongoose
+// //                                          echo "mongooseinstalled successfully"
+// //                                     '''
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Tests') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm run cy:run'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-        stage('Build') {
-            parallel {
-                stage('Build Backend') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            script {
-                                // Build Docker image for backend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
-                                """
-                            }
-                        }
-                    }
-                }
-                stage('Build Frontend') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            // Build frontend assets
-                            sh 'npm run build'
-                            script {
-                                // Build Docker image for frontend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
-                                """
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//         stage('Build') {
+//             parallel {
+//                 stage('Build Backend') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 // Build Docker image for backend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Build Frontend') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             // Build frontend assets
+//                             sh 'npm run build'
+//                             script {
+//                                 // Build Docker image for frontend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
         // stage('Push Docker Images') {
         //     steps {
@@ -1919,3 +1919,168 @@ pipeline {
 //         }
 //     }
 // }
+
+
+pipeline {
+    agent any
+    
+    tools {
+        nodejs 'NodeJS'
+    }
+
+    environment {
+        MONGODB_URI = credentials('mongodb-uri')
+        NODE_ENV = 'production'
+        DOCKER_REGISTRY = 'tranvuquanganh87'
+        DOCKER_CREDENTIALS = credentials('docker-credentials')
+    }
+
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        skipDefaultCheckout(true)
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Detect Changes') {
+            steps {
+                script {
+                    def changes = []
+                    try {
+                        changes = sh(
+                            script: 'git diff --name-only HEAD^ HEAD',
+                            returnStdout: true
+                        ).trim().split('\n')
+                    } catch (err) {
+                        changes = sh(
+                            script: 'git ls-files',
+                            returnStdout: true
+                        ).trim().split('\n')
+                    }
+
+                    env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+                    env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                    
+                    echo "Changes detected in files: ${changes}"
+                    echo "Backend changed: ${env.BACKEND_CHANGED}"
+                    echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            parallel {
+                stage('Backend Dependencies') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            sh 'npm ci'
+                        }
+                    }
+                }
+                stage('Frontend Dependencies') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm ci'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            parallel {
+                stage('Backend Tests') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            sh '''
+                                #!/bin/bash
+                                echo "Running backend tests..."
+                                NODE_ENV=test npm test
+                            '''
+                        }
+                    }
+                }
+                stage('Frontend Tests') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm run cy:run'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            parallel {
+                stage('Build Backend') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            script {
+                                sh '''
+                                    #!/bin/bash
+                                    # Check if Docker is installed
+                                    if ! command -v docker &> /dev/null; then
+                                        echo "Docker not found. Installing Docker..."
+                                        curl -fsSL https://get.docker.com -o get-docker.sh
+                                        sudo sh get-docker.sh
+                                        sudo usermod -aG docker jenkins
+                                    fi
+                                    
+                                    docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+                                    docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+                                '''
+                            }
+                        }
+                    }
+                }
+                stage('Build Frontend') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm run build'
+                            script {
+                                sh '''
+                                    #!/bin/bash
+                                    docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+                                    docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                try {
+                    sh '''
+                        #!/bin/bash
+                        docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+                        docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+                    '''
+                } catch (Exception e) {
+                    echo "Warning: Failed to cleanup docker images: ${e.getMessage()}"
+                }
+            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed! Check the logs above for detailed error information.'
+        }
+    }
+}
