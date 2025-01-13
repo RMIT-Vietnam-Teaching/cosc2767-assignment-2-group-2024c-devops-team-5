@@ -2149,13 +2149,13 @@ pipeline {
                     steps {
                         dir('server') {
                             sh '''
-                                echo "Installing backend dependencies..."
-                                rm -rf node_modules package-lock.json
-                                echo "Installing mongodb-memory-server..."
-                                npm install mongodb-memory-server --save-dev
-                                npm install --legacy-peer-deps
-                                npm install jest --save-dev
-                                chmod +x node_modules/.bin/*
+                                 echo "Installing backend dependencies..."
+                                 rm -rf node_modules package-lock.json
+                                 echo "Installing mongodb-memory-server..."
+                                 npm install mongodb-memory-server@latest --save-dev
+                                 npm install --legacy-peer-deps
+                                 npm install jest --save-dev
+                                 chmod +x node_modules/.bin/*
                             '''
                         }
                     }
