@@ -2162,6 +2162,9 @@ pipeline {
                 
                 echo "Verifying mongodb-memory-server installation..."
                 npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
+
+                echo "Verifying supertest installation..."
+                npm list supertest || (echo "supertest not installed!" && exit 1)
                 
                             '''
                         }
