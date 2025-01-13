@@ -1450,10 +1450,6 @@
 pipeline {
     agent any
     
-    tools {
-        nodejs 'NodeJS'
-    }
-
     environment {
         MONGODB_URI = credentials('mongodb-uri')
         NODE_ENV = 'production'
@@ -1465,7 +1461,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 20, unit: 'MINUTES')
         skipDefaultCheckout(true)
         // Add fail-fast option
         parallelsAlwaysFailFast()
