@@ -4,12 +4,15 @@ const app = require('../index');
 const Brand = require('../models/brand');
 const Product = require('../models/product');
 const Merchant = require('../models/merchant');
+const { database } = keys;
+
+const mongoConfig = {
+  useNewUrlParser: true,
+  serverSelectionTimeoutMS: 5000,
+};
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/testdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+   await mongoose.connect(database.url, mongoConfig);
 });
 
 afterAll(async () => {

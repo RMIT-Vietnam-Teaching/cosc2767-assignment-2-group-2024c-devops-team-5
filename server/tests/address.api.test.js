@@ -3,14 +3,18 @@ const mongoose = require('mongoose');
 const app = require('../index'); 
 const Address = require('../models/address');
 const authMiddleware = require('../middleware/auth');
-
+const { database } = keys;
 jest.mock('../middleware/auth', () => jest.fn());
 
+
+const mongoConfig = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+};
+
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/testdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+   await mongoose.connect(database.url, mongoConfig);
 });
 
 afterAll(async () => {

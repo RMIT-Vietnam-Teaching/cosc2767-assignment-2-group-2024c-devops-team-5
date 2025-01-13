@@ -3,12 +3,16 @@ const mongoose = require('mongoose');
 const app = require('../index'); 
 const Category = require('../models/category');
 const Product = require('../models/product');
+const { database } = keys;
+
+
+const mongoConfig = {
+  useNewUrlParser: true,
+  serverSelectionTimeoutMS: 5000,
+};
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/testdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  await mongoose.connect(database.url, mongoConfig);
 });
 
 afterAll(async () => {

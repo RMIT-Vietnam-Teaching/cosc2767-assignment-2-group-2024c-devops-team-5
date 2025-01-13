@@ -1,6 +1,13 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../index'); 
+const { database } = keys;
+
+
+const mongoConfig = {
+  useNewUrlParser: true,
+  serverSelectionTimeoutMS: 5000,
+};
 
 // Mock the mailchimp and mailgun services
 jest.mock('../services/mailchimp.js', () => ({
@@ -15,10 +22,7 @@ const mailchimp = require('../../services/mailchimp');
 const mailgun = require('../../services/mailgun');
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/testdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  await mongoose.connect(database.url, mongoConfig);
 });
 
 afterAll(async () => {

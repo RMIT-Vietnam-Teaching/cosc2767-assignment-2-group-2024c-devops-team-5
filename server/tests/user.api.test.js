@@ -3,13 +3,18 @@ const mongoose = require('mongoose');
 const app = require('../index'); 
 const User = require('../models/user');
 
-beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/testdb', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-});
+const { database } = keys;
 
+
+const mongoConfig = {
+  useNewUrlParser: true,
+  serverSelectionTimeoutMS: 5000,
+};
+
+
+beforeAll(async () => {
+  await mongoose.connect(database.url, mongoConfig);
+});
 afterAll(async () => {
   await mongoose.connection.dropDatabase();
   await mongoose.connection.close();
