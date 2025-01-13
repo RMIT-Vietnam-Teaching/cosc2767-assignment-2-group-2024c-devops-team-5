@@ -2089,9 +2089,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'
-        docker 'Docker'
+   tools {
+    nodejs 'NodeJS' // Correct tool for Node.js
+    dockerTool 'Docker' // Correct tool for Docker
     }
 
     environment {
