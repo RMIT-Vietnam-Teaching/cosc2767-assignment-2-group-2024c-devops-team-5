@@ -2156,7 +2156,7 @@ pipeline {
                 npm install --legacy-peer-deps
                 
                 echo "Installing mongodb-memory-server..."
-                npm install mongodb-memory-server@latest --save-dev
+                 npm install mongodb-memory-server@10.1.3 --save-dev
                 
                 echo "Verifying dependency installation..."
                 npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
