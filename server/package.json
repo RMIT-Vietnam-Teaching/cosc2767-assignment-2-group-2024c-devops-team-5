@@ -2,12 +2,14 @@
   "name": "server",
   "version": "1.0.0",
   "description": "RMIT Ecommerce Server",
+  
   "scripts": {
     "dev": "nodemon",
     "start": "cross-env NODE_ENV=production node index.js",
     "seed:db": "node utils/seed.js",
     "test": "npx jest --detectOpenHandles --forceExit"
   },
+  "type": "module",
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
