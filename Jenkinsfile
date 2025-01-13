@@ -161,24 +161,24 @@
         //         }
         //     }
         // }
-    }
+//     }
 
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-        always {
-            // Clean up Docker images
-            sh """
-            docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-            docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-            """
-        }
-    }
-}
+//     post {
+//         success {
+//             echo 'Pipeline completed successfully!'
+//         }
+//         failure {
+//             echo 'Pipeline failed!'
+//         }
+//         always {
+//             // Clean up Docker images
+//             sh """
+//             docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//             docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//         }
+//     }
+// }
 
 
 
