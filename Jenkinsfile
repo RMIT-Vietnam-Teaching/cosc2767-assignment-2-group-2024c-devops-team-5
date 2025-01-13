@@ -2143,6 +2143,7 @@ pipeline {
                         npm install --legacy-peer-deps
                         npm install mongoose@latest --save --force
                         npm install mongodb-memory-server@latest --save-dev --force
+                        npm install jest --save-dev --force
                         
                         # Verify installations
                         echo "Verifying Jest installation:"
