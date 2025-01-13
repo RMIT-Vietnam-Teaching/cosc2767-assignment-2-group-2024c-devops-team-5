@@ -1339,6 +1339,9 @@ pipeline {
                                         echo "Installing backend dependencies..."
                                         npm install
                                         echo "Backend dependencies installed successfully"
+                                         echo "Installing mongoose..."
+                                        npm install mongoose
+                                         echo "mongooseinstalled successfully"
                                     '''
                                 } catch (err) {
                                     echo "Error installing backend dependencies: ${err}"
