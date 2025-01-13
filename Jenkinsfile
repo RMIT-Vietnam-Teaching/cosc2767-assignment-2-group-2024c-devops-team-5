@@ -1,180 +1,180 @@
-// pipeline {
-//     agent any
+pipeline {
+    agent any
 
-//     environment {
-//         MONGODB_URI = credentials('mongodb-uri')
-//         NODE_ENV = 'production'
-//         // Add your Docker registry credentials if needed
-//         DOCKER_REGISTRY = 'tranvuquanganh87'
-//         DOCKER_CREDENTIALS = credentials('docker-credentials')
-//     }
+    environment {
+        MONGODB_URI = credentials('mongodb-uri')
+        NODE_ENV = 'production'
+        // Add your Docker registry credentials if needed
+        DOCKER_REGISTRY = 'tranvuquanganh87'
+        DOCKER_CREDENTIALS = credentials('docker-credentials')
+    }
 
-//     stages {
-//         stage('Checkout') {
-//             steps {
-//                 checkout scm
-//             }
-//         }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
-//         stage('Detect Changes') {
-//             steps {
-//                 script {
-//                     // Get changed files between current and previous successful buåååååååild
-//                     def changes = []
-//                     try {
-//                         changes = sh(
-//                             script: 'git diff --name-only HEAD^ HEAD',
-//                             returnStdout: true
-//                         ).trim().split('\n')
-//                     } catch (err) {
-//                         // If first commit or other git errors, assume all files changed
-//                         changes = sh(
-//                             script: 'git ls-files',
-//                             returnStdout: true
-//                         ).trim().split('\n')
-//                     }
+        stage('Detect Changes') {
+            steps {
+                script {
+                    // Get changed files between current and previous successful buåååååååild
+                    def changes = []
+                    try {
+                        changes = sh(
+                            script: 'git diff --name-only HEAD^ HEAD',
+                            returnStdout: true
+                        ).trim().split('\n')
+                    } catch (err) {
+                        // If first commit or other git errors, assume all files changed
+                        changes = sh(
+                            script: 'git ls-files',
+                            returnStdout: true
+                        ).trim().split('\n')
+                    }
 
-//                     env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
-//                     env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
-//                 }
-//             }
-//         }
+                    env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+                    env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                }
+            }
+        }
 
-//         stage('Install Dependencies') {
-//             parallel {
-//                 stage('Backend Dependencies') {
-//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('server') {
-//                             sh 'npm install'
-//                         }
-//                     }
-//                 }
-//                 stage('Frontend Dependencies') {
-//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('client') {
-//                             sh 'npm install'
-//                         }
-//                     }
-//                 }
-//             }
-//         }
+        stage('Install Dependencies') {
+            parallel {
+                stage('Backend Dependencies') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            sh 'npm install'
+                        }
+                    }
+                }
+                stage('Frontend Dependencies') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm install'
+                        }
+                    }
+                }
+            }
+        }
 
-//         stage('Run Tests') {
-//             parallel {
-//                 stage('Backend Tests') {
-//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('server') {
-//                             sh 'npm test'
-//                         }
-//                     }
-//                 }
-//                 stage('Frontend Tests') {
-//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('client') {
-//                             sh 'npm run cy:run'
-//                         }
-//                     }
-//                 }
-//             }
-//         }
+        stage('Run Tests') {
+            parallel {
+                stage('Backend Tests') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            sh 'npm test'
+                        }
+                    }
+                }
+                stage('Frontend Tests') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            sh 'npm run cy:run'
+                        }
+                    }
+                }
+            }
+        }
 
-//         stage('Build') {
-//             parallel {
-//                 stage('Build Backend') {
-//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('server') {
-//                             script {
-//                                 // Build Docker image for backend
-//                                 sh """
-//                                 docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
-//                                 docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
-//                                 """
-//                             }
-//                         }
-//                     }
-//                 }
-//                 stage('Build Frontend') {
-//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('client') {
-//                             // Build frontend assets
-//                             sh 'npm run build'
-//                             script {
-//                                 // Build Docker image for frontend
-//                                 sh """
-//                                 docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
-//                                 docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
-//                                 """
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
+        stage('Build') {
+            parallel {
+                stage('Build Backend') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            script {
+                                // Build Docker image for backend
+                                sh """
+                                docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+                                """
+                            }
+                        }
+                    }
+                }
+                stage('Build Frontend') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            // Build frontend assets
+                            sh 'npm run build'
+                            script {
+                                // Build Docker image for frontend
+                                sh """
+                                docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-//         stage('Push Docker Images') {
-//             steps {
-//                 script {
-//                     // Login to Docker registry
-//                     sh "echo ${DOCKER_CREDENTIALS_PSW} | docker login -u ${DOCKER_CREDENTIALS_USR} --password-stdin ${DOCKER_REGISTRY}"
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    // Login to Docker registry
+                    sh "echo ${DOCKER_CREDENTIALS_PSW} | docker login -u ${DOCKER_CREDENTIALS_USR} --password-stdin ${DOCKER_REGISTRY}"
                     
-//                     if (env.BACKEND_CHANGED == 'true') {
-//                         sh """
-//                         docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
-//                         docker push ${DOCKER_REGISTRY}/backend:latest
-//                         """
-//                     }
-//                     if (env.FRONTEND_CHANGED == 'true') {
-//                         sh """
-//                         docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
-//                         docker push ${DOCKER_REGISTRY}/frontend:latest
-//                         """
-//                     }
-//                 }
-//             }
-//         }
+                    if (env.BACKEND_CHANGED == 'true') {
+                        sh """
+                        docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
+                        docker push ${DOCKER_REGISTRY}/backend:latest
+                        """
+                    }
+                    if (env.FRONTEND_CHANGED == 'true') {
+                        sh """
+                        docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
+                        docker push ${DOCKER_REGISTRY}/frontend:latest
+                        """
+                    }
+                }
+            }
+        }
 
-//         // stage('Deploy') {
-//         //     steps {
-//         //         script {
-//         //             if (env.BACKEND_CHANGED == 'true') {
-//         //                 // Deploy backend
-//         //                 sh """
-//         //                 kubectl set image deployment/backend backend=${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
-//         //                 """
-//         //             }
-//         //             if (env.FRONTEND_CHANGED == 'true') {
-//         //                 // Deploy frontend
-//         //                 sh """
-//         //                 kubectl set image deployment/frontend frontend=${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
-//         //                 """
-//         //             }
-//         //         }
-//         //     }
-//         // }
-//     }
+        // stage('Deploy') {
+        //     steps {
+        //         script {
+        //             if (env.BACKEND_CHANGED == 'true') {
+        //                 // Deploy backend
+        //                 sh """
+        //                 kubectl set image deployment/backend backend=${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
+        //                 """
+        //             }
+        //             if (env.FRONTEND_CHANGED == 'true') {
+        //                 // Deploy frontend
+        //                 sh """
+        //                 kubectl set image deployment/frontend frontend=${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
+    }
 
-//     post {
-//         success {
-//             echo 'Pipeline completed successfully!'
-//         }
-//         failure {
-//             echo 'Pipeline failed!'
-//         }
-//         always {
-//             // Clean up Docker images
-//             sh """
-//             docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-//             docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-//             """
-//         }
-//     }
-// }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        always {
+            // Clean up Docker images
+            sh """
+            docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+            docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+            """
+        }
+    }
+}
 
 
 
@@ -1103,156 +1103,156 @@
 
 
 
-pipeline {
-    agent any
+// pipeline {
+//     agent any
 
-    tools {
-        nodejs 'NodeJS'
-    }
+//     tools {
+//         nodejs 'NodeJS'
+//     }
 
-    options {
-        timeout(time: 15, unit: 'MINUTES')
-        skipDefaultCheckout(true)
-    }
+//     options {
+//         timeout(time: 15, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//     }
 
-    environment {
-        NODE_ENV = 'production'
-        MONGODB_URI = credentials('mongodb-uri')
-        DOCKER_REGISTRY = 'tranvuquanganh87'
-        NPM_CONFIG_LOGLEVEL = 'verbose'
-    }
+//     environment {
+//         NODE_ENV = 'production'
+//         MONGODB_URI = credentials('mongodb-uri')
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         NPM_CONFIG_LOGLEVEL = 'verbose'
+//     }
 
-    stages {
-        stage('Cleanup Workspace') {
-            steps {
-                deleteDir()
-                checkout scm
-            }
-        }
+//     stages {
+//         stage('Cleanup Workspace') {
+//             steps {
+//                 deleteDir()
+//                 checkout scm
+//             }
+//         }
 
-        stage('Detect Changes') {
-            steps {
-                script {
-                    env.BACKEND_CHANGED = sh(
-                        script: 'git diff --name-only HEAD^ HEAD | grep ^server/ || true',
-                        returnStatus: true
-                    ) == 0
-                    env.FRONTEND_CHANGED = sh(
-                        script: 'git diff --name-only HEAD^ HEAD | grep ^client/ || true',
-                        returnStatus: true
-                    ) == 0
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     env.BACKEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^server/ || true',
+//                         returnStatus: true
+//                     ) == 0
+//                     env.FRONTEND_CHANGED = sh(
+//                         script: 'git diff --name-only HEAD^ HEAD | grep ^client/ || true',
+//                         returnStatus: true
+//                     ) == 0
                     
-                    echo "Backend changed: ${env.BACKEND_CHANGED}"
-                    echo "Frontend changed: ${env.FRONTEND_CHANGED}"
-                }
-            }
-        }
+//                     echo "Backend changed: ${env.BACKEND_CHANGED}"
+//                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+//                 }
+//             }
+//         }
 
-        stage('Install Dependencies') {
-            parallel {
-                stage('Backend Dependencies') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            script {
-                                // Add current timestamp for tracking
-                                def startTime = new Date()
-                                echo "Starting backend npm install at ${startTime}"
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 // Add current timestamp for tracking
+//                                 def startTime = new Date()
+//                                 echo "Starting backend npm install at ${startTime}"
                                 
-                                timeout(time: 5, unit: 'MINUTES') {
-                                    sh '''
-                                        # Clear npm cache first
-                                        npm cache clean --force
+//                                 timeout(time: 5, unit: 'MINUTES') {
+//                                     sh '''
+//                                         # Clear npm cache first
+//                                         npm cache clean --force
                                         
-                                        # Show environment info
-                                        echo "=== Environment Information ==="
-                                        echo "Node version: $(node -v)"
-                                        echo "NPM version: $(npm -v)"
-                                        echo "Current directory: $(pwd)"
-                                        echo "================================"
+//                                         # Show environment info
+//                                         echo "=== Environment Information ==="
+//                                         echo "Node version: $(node -v)"
+//                                         echo "NPM version: $(npm -v)"
+//                                         echo "Current directory: $(pwd)"
+//                                         echo "================================"
                                         
-                                        # Install with progress tracking
-                                        npm ci --production=false --verbose > npm-install.log 2>&1 || {
-                                            echo "npm install failed. Last 50 lines of log:"
-                                            tail -n 50 npm-install.log
-                                            exit 1
-                                        }
+//                                         # Install with progress tracking
+//                                         npm ci --production=false --verbose > npm-install.log 2>&1 || {
+//                                             echo "npm install failed. Last 50 lines of log:"
+//                                             tail -n 50 npm-install.log
+//                                             exit 1
+//                                         }
                                         
-                                        echo "NPM installation completed successfully"
-                                    '''
-                                }
+//                                         echo "NPM installation completed successfully"
+//                                     '''
+//                                 }
                                 
-                                def endTime = new Date()
-                                echo "Finished backend npm install at ${endTime}"
-                                echo "Duration: ${endTime.time - startTime.time}ms"
-                            }
-                        }
-                    }
-                }
+//                                 def endTime = new Date()
+//                                 echo "Finished backend npm install at ${endTime}"
+//                                 echo "Duration: ${endTime.time - startTime.time}ms"
+//                             }
+//                         }
+//                     }
+//                 }
                 
-                stage('Frontend Dependencies') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            script {
-                                def startTime = new Date()
-                                echo "Starting frontend npm install at ${startTime}"
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             script {
+//                                 def startTime = new Date()
+//                                 echo "Starting frontend npm install at ${startTime}"
                                 
-                                timeout(time: 5, unit: 'MINUTES') {
-                                    sh '''
-                                        # Clear npm cache first
-                                        npm cache clean --force
+//                                 timeout(time: 5, unit: 'MINUTES') {
+//                                     sh '''
+//                                         # Clear npm cache first
+//                                         npm cache clean --force
                                         
-                                        # Show environment info
-                                        echo "=== Environment Information ==="
-                                        echo "Node version: $(node -v)"
-                                        echo "NPM version: $(npm -v)"
-                                        echo "Current directory: $(pwd)"
-                                        echo "================================"
+//                                         # Show environment info
+//                                         echo "=== Environment Information ==="
+//                                         echo "Node version: $(node -v)"
+//                                         echo "NPM version: $(npm -v)"
+//                                         echo "Current directory: $(pwd)"
+//                                         echo "================================"
                                         
-                                        # Install with progress tracking
-                                        npm ci --production=false --verbose > npm-install.log 2>&1 || {
-                                            echo "npm install failed. Last 50 lines of log:"
-                                            tail -n 50 npm-install.log
-                                            exit 1
-                                        }
+//                                         # Install with progress tracking
+//                                         npm ci --production=false --verbose > npm-install.log 2>&1 || {
+//                                             echo "npm install failed. Last 50 lines of log:"
+//                                             tail -n 50 npm-install.log
+//                                             exit 1
+//                                         }
                                         
-                                        echo "NPM installation completed successfully"
-                                    '''
-                                }
+//                                         echo "NPM installation completed successfully"
+//                                     '''
+//                                 }
                                 
-                                def endTime = new Date()
-                                echo "Finished frontend npm install at ${endTime}"
-                                echo "Duration: ${endTime.time - startTime.time}ms"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//                                 def endTime = new Date()
+//                                 echo "Finished frontend npm install at ${endTime}"
+//                                 echo "Duration: ${endTime.time - startTime.time}ms"
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-        // Rest of your existing stages remain the same...
-    }
+//         // Rest of your existing stages remain the same...
+//     }
 
-    post {
-        always {
-            sh """
-                docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-                docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-            """
-            archiveArtifacts artifacts: '**/npm-install.log', allowEmptyArchive: true
-        }
-        failure {
-            script {
-                echo "Build failed. Checking for npm logs..."
-                sh '''
-                    for log in $(find . -name npm-install.log); do
-                        echo "=== Contents of $log ==="
-                        cat $log
-                        echo "=== End of $log ==="
-                    done
-                '''
-            }
-        }
-    }
-}
+//     post {
+//         always {
+//             sh """
+//                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//             archiveArtifacts artifacts: '**/npm-install.log', allowEmptyArchive: true
+//         }
+//         failure {
+//             script {
+//                 echo "Build failed. Checking for npm logs..."
+//                 sh '''
+//                     for log in $(find . -name npm-install.log); do
+//                         echo "=== Contents of $log ==="
+//                         cat $log
+//                         echo "=== End of $log ==="
+//                     done
+//                 '''
+//             }
+//         }
+//     }
+// }
