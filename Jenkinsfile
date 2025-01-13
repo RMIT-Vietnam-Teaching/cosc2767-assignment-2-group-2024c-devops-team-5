@@ -1264,11 +1264,195 @@
 
 
 
+// pipeline {
+//     agent any
+    
+//     tools {
+//         nodejs 'NodeJS' // Make sure this matches your Jenkins NodeJS installation name
+//     }
+
+//     environment {
+//         MONGODB_URI = credentials('mongodb-uri')
+//         NODE_ENV = 'production'
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         DOCKER_CREDENTIALS = credentials('docker-credentials')
+//         // Add PATH to include npm
+//         PATH = "${env.PATH}:/usr/local/bin"
+//     }
+
+//     options {
+//         timeout(time: 15, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//     }
+
+//     stages {
+//         stage('Verify Tools') {
+//             steps {
+//                 sh '''
+//                     echo "Node version: $(node -v)"
+//                     echo "NPM version: $(npm -v)"
+//                     echo "Current PATH: $PATH"
+//                 '''
+//             }
+//         }
+
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Detect Changes') {
+//             steps {
+//                 script {
+//                     def changes = []
+//                     try {
+//                         changes = sh(
+//                             script: 'git diff --name-only HEAD^ HEAD',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     } catch (err) {
+//                         changes = sh(
+//                             script: 'git ls-files',
+//                             returnStdout: true
+//                         ).trim().split('\n')
+//                     }
+
+//                     env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+//                     env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                    
+//                     echo "Backend changed: ${env.BACKEND_CHANGED}"
+//                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+//                 }
+//             }
+//         }
+
+//         stage('Install Dependencies') {
+//             parallel {
+//                 stage('Backend Dependencies') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 try {
+//                                     sh '''
+//                                         echo "Installing backend dependencies..."
+//                                         npm install
+//                                         echo "Backend dependencies installed successfully"
+//                                          echo "Installing mongoose..."
+//                                         npm install mongoose
+//                                          echo "mongooseinstalled successfully"
+//                                     '''
+//                                 } catch (err) {
+//                                     echo "Error installing backend dependencies: ${err}"
+//                                     throw err
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Dependencies') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             script {
+//                                 try {
+//                                     sh '''
+//                                         echo "Installing frontend dependencies..."
+//                                         npm install
+//                                         echo "Frontend dependencies installed successfully"
+//                                     '''
+//                                 } catch (err) {
+//                                     echo "Error installing frontend dependencies: ${err}"
+//                                     throw err
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//                 stage('Run Tests') {
+//             parallel {
+//                 stage('Backend Tests') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             sh 'npm test'
+//                         }
+//                     }
+//                 }
+//                 stage('Frontend Tests') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             sh 'npm run cy:run'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//          stage('Build') {
+//             parallel {
+//                 stage('Build Backend') {
+//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('server') {
+//                             script {
+//                                 // Build Docker image for backend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage('Build Frontend') {
+//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+//                     steps {
+//                         dir('client') {
+//                             // Build frontend assets
+//                             sh 'npm run build'
+//                             script {
+//                                 // Build Docker image for frontend
+//                                 sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
+//                                 docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
+//                                 """
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         // Rest of your stages remain the same...
+//     }
+
+//     post {
+//         always {
+//             sh """
+//                 docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+//                 docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+//             """
+//         }
+//         failure {
+//             echo 'Pipeline failed!'
+//         }
+//     }
+// }
+
+
+
+
 pipeline {
     agent any
     
     tools {
-        nodejs 'NodeJS' // Make sure this matches your Jenkins NodeJS installation name
+        nodejs 'NodeJS'
     }
 
     environment {
@@ -1276,7 +1460,7 @@ pipeline {
         NODE_ENV = 'production'
         DOCKER_REGISTRY = 'tranvuquanganh87'
         DOCKER_CREDENTIALS = credentials('docker-credentials')
-        // Add PATH to include npm
+        // Add build essentials for bcrypt
         PATH = "${env.PATH}:/usr/local/bin"
     }
 
@@ -1292,6 +1476,18 @@ pipeline {
                     echo "Node version: $(node -v)"
                     echo "NPM version: $(npm -v)"
                     echo "Current PATH: $PATH"
+                '''
+            }
+        }
+
+        stage('Install System Dependencies') {
+            steps {
+                sh '''
+                    # Update package lists
+                    sudo apt-get update || true
+                    
+                    # Install build essentials for bcrypt
+                    sudo apt-get install -y build-essential python3 make gcc || true
                 '''
             }
         }
@@ -1337,14 +1533,19 @@ pipeline {
                                 try {
                                     sh '''
                                         echo "Installing backend dependencies..."
-                                        npm install
+                                        # Clear npm cache and remove node_modules
+                                        npm cache clean --force
+                                        rm -rf node_modules package-lock.json
+                                        
+                                        # Install dependencies with legacy peer deps to handle compatibility issues
+                                        npm install --legacy-peer-deps
+                                        
                                         echo "Backend dependencies installed successfully"
-                                         echo "Installing mongoose..."
-                                        npm install mongoose
-                                         echo "mongooseinstalled successfully"
                                     '''
                                 } catch (err) {
                                     echo "Error installing backend dependencies: ${err}"
+                                    // Archive npm logs for debugging
+                                    sh 'cat /var/lib/jenkins/.npm/_logs/*-debug-0.log || true'
                                     throw err
                                 }
                             }
@@ -1359,69 +1560,21 @@ pipeline {
                                 try {
                                     sh '''
                                         echo "Installing frontend dependencies..."
-                                        npm install
+                                        # Clear npm cache and remove node_modules
+                                        npm cache clean --force
+                                        rm -rf node_modules package-lock.json
+                                        
+                                        # Install dependencies with legacy peer deps
+                                        npm install --legacy-peer-deps
+                                        
                                         echo "Frontend dependencies installed successfully"
                                     '''
                                 } catch (err) {
                                     echo "Error installing frontend dependencies: ${err}"
+                                    // Archive npm logs for debugging
+                                    sh 'cat /var/lib/jenkins/.npm/_logs/*-debug-0.log || true'
                                     throw err
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-                stage('Run Tests') {
-            parallel {
-                stage('Backend Tests') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            sh 'npm test'
-                        }
-                    }
-                }
-                stage('Frontend Tests') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            sh 'npm run cy:run'
-                        }
-                    }
-                }
-            }
-        }
-
-         stage('Build') {
-            parallel {
-                stage('Build Backend') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('server') {
-                            script {
-                                // Build Docker image for backend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest
-                                """
-                            }
-                        }
-                    }
-                }
-                stage('Build Frontend') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-                    steps {
-                        dir('client') {
-                            // Build frontend assets
-                            sh 'npm run build'
-                            script {
-                                // Build Docker image for frontend
-                                sh """
-                                docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} .
-                                docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest
-                                """
                             }
                         }
                     }
@@ -1441,6 +1594,8 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed!'
+            // Archive npm logs on failure
+            sh 'find /var/lib/jenkins/.npm/_logs -name "*-debug-0.log" -exec cat {} \\; || true'
         }
     }
 }
