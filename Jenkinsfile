@@ -1450,6 +1450,10 @@
 pipeline {
     agent any
     
+    tools {
+        nodejs 'NodeJS'
+    }
+
     environment {
         MONGODB_URI = credentials('mongodb-uri')
         NODE_ENV = 'production'
