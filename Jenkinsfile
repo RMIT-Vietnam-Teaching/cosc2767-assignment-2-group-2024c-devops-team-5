@@ -2091,6 +2091,7 @@ pipeline {
 
     tools {
         nodejs 'NodeJS'
+        docker 'Docker'
     }
 
     environment {
@@ -2104,11 +2105,11 @@ pipeline {
             steps {
                 sh '''
                     echo "Checking Node and npm versions..."
-                    node --version
-                    npm --version
+                    node --version || (echo "Node.js is not installed!" && exit 1)
+                    npm --version || (echo "npm is not installed!" && exit 1)
 
                     echo "Checking if Docker is installed..."
-                    which docker || (echo "Docker not found. Please install Docker" && exit 1)
+                    docker --version || (echo "Docker not found. Please install Docker." && exit 1)
                 '''
             }
         }
@@ -2129,9 +2130,9 @@ pipeline {
                         ).trim().split('\n')
                     }
 
-                    env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
-                    env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
-                    
+                    env.BACKEND_CHANGED = changes.any { it.startsWith('server/') }.toString()
+                    env.FRONTEND_CHANGED = changes.any { it.startsWith('client/') }.toString()
+
                     echo "Changes detected in files: ${changes}"
                     echo "Backend changed: ${env.BACKEND_CHANGED}"
                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
@@ -2142,43 +2143,29 @@ pipeline {
         stage('Install Dependencies') {
             parallel {
                 stage('Backend Dependencies') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    when {
+                        expression { env.BACKEND_CHANGED == 'true' }
+                    }
                     steps {
                         dir('server') {
                             sh '''
-                                # Clean install
+                                echo "Installing backend dependencies..."
                                 rm -rf node_modules package-lock.json
-                                
-                                # Global installations
-                                npm install -g jest
-                                
-                                # Install dependencies
                                 npm install --legacy-peer-deps
-                                npm install mongoose@latest --save
-                                npm install mongodb-memory-server@latest --save-dev
                                 npm install jest --save-dev
-                                
-                                # Verify installations
-                                echo "Node modules directory content:"
-                                ls -la node_modules/.bin/
-                                
-                                echo "Jest global installation:"
-                                jest --version || true
-                                
-                                echo "Jest local installation:"
-                                ./node_modules/.bin/jest --version || true
-                                
-                                # Give execution permissions
                                 chmod +x node_modules/.bin/*
                             '''
                         }
                     }
                 }
                 stage('Frontend Dependencies') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    when {
+                        expression { env.FRONTEND_CHANGED == 'true' }
+                    }
                     steps {
                         dir('client') {
                             sh '''
+                                echo "Installing frontend dependencies..."
                                 rm -rf node_modules package-lock.json
                                 npm install --legacy-peer-deps
                             '''
@@ -2191,32 +2178,22 @@ pipeline {
         stage('Run Tests') {
             parallel {
                 stage('Backend Tests') {
-                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    when {
+                        expression { env.BACKEND_CHANGED == 'true' }
+                    }
                     steps {
                         dir('server') {
                             sh '''
-                                # Create jest.config.js if it doesn't exist
-                                if [ ! -f jest.config.js ]; then
-                                    echo "module.exports = {
-                                        testEnvironment: 'node',
-                                        testTimeout: 30000,
-                                        verbose: true,
-                                        testPathIgnorePatterns: [
-                                            '/node_modules/',
-                                            '/auth.api.test.js',
-                                            '/address.unit.test.js'
-                                        ]
-                                    };" > jest.config.js
-                                fi
-                                
-                                # Run tests with npx
+                                echo "Running backend tests..."
                                 NODE_ENV=test npx jest --detectOpenHandles --forceExit
                             '''
                         }
                     }
                 }
                 stage('Frontend Tests') {
-                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    when {
+                        expression { env.FRONTEND_CHANGED == 'true' }
+                    }
                     steps {
                         dir('client') {
                             sh 'CI=true npm test'
@@ -2229,10 +2206,10 @@ pipeline {
         stage('Build') {
             parallel {
                 stage('Build Backend') {
-                    when { 
+                    when {
                         allOf {
-                            environment name: 'BACKEND_CHANGED', value: 'true'
-                            expression { return fileExists('server/Dockerfile') }
+                            expression { env.BACKEND_CHANGED == 'true' }
+                            expression { fileExists('server/Dockerfile') }
                         }
                     }
                     steps {
@@ -2244,10 +2221,10 @@ pipeline {
                     }
                 }
                 stage('Build Frontend') {
-                    when { 
+                    when {
                         allOf {
-                            environment name: 'FRONTEND_CHANGED', value: 'true'
-                            expression { return fileExists('client/Dockerfile') }
+                            expression { env.FRONTEND_CHANGED == 'true' }
+                            expression { fileExists('client/Dockerfile') }
                         }
                     }
                     steps {
@@ -2278,7 +2255,7 @@ pipeline {
                         docker rmi ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
                     """
                 } catch (Exception e) {
-                    echo "Warning: Failed to cleanup docker images: ${e.getMessage()}"
+                    echo "Warning: Failed to cleanup Docker images: ${e.getMessage()}"
                 }
             }
         }
