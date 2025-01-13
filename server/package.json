@@ -16,7 +16,13 @@
     "detectOpenHandles": true,
     "setupFilesAfterEnv": [
       "<rootDir>/tests/test-setup.js"
-    ]
+    ],
+    "transform": {
+    "^.+\\.js$": "babel-jest"
+  },
+  "transformIgnorePatterns": [
+    "/node_modules/(?!(chalk)/)"
+  ]
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
