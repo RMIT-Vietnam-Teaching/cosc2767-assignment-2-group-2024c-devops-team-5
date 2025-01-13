@@ -1447,273 +1447,6 @@
 
 
 
-// pipeline {
-//     agent any
-    
-//     tools {
-//         nodejs 'NodeJS'
-//     }
-
-//     environment {
-//         MONGODB_URI = credentials('mongodb-uri')
-//         NODE_ENV = 'production'
-//         DOCKER_REGISTRY = 'tranvuquanganh87'
-//         DOCKER_CREDENTIALS = credentials('docker-credentials')
-//         PATH = "${env.PATH}:/usr/local/bin"
-//         // Add error handling environment variable
-//         ERROR_FOUND = 'false'
-//     }
-
-//     options {
-//         timeout(time: 15, unit: 'MINUTES')
-//         skipDefaultCheckout(true)
-//         // Add fail-fast option
-//         parallelsAlwaysFailFast()
-//     }
-
-//     stages {
-//         stage('Verify Tools') {
-//             steps {
-//                 script {
-//                     try {
-//                         sh '''
-//                             echo "Node version: $(node -v)"
-//                             echo "NPM version: $(npm -v)"
-//                             echo "Current PATH: $PATH"
-//                         '''
-//                     } catch (Exception e) {
-//                         echo "Failed to verify tools: ${e.getMessage()}"
-//                         currentBuild.result = 'FAILURE'
-//                         error("Pipeline failed at tool verification")
-//                     }
-//                 }
-//             }
-//         }
-
-//         stage('Checkout') {
-//             steps {
-//                 script {
-//                     try {
-//                         checkout scm
-//                     } catch (Exception e) {
-//                         echo "Failed to checkout code: ${e.getMessage()}"
-//                         currentBuild.result = 'FAILURE'
-//                         error("Pipeline failed at checkout")
-//                     }
-//                 }
-//             }
-//         }
-
-//         stage('Detect Changes') {
-//             steps {
-//                 script {
-//                     try {
-//                         def changes = []
-//                         try {
-//                             changes = sh(
-//                                 script: 'git diff --name-only HEAD^ HEAD',
-//                                 returnStdout: true
-//                             ).trim().split('\n')
-//                         } catch (err) {
-//                             changes = sh(
-//                                 script: 'git ls-files',
-//                                 returnStdout: true
-//                             ).trim().split('\n')
-//                         }
-
-//                         env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
-//                         env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
-                        
-//                         echo "Backend changed: ${env.BACKEND_CHANGED}"
-//                         echo "Frontend changed: ${env.FRONTEND_CHANGED}"
-//                     } catch (Exception e) {
-//                         echo "Failed to detect changes: ${e.getMessage()}"
-//                         currentBuild.result = 'FAILURE'
-//                         error("Pipeline failed at change detection")
-//                     }
-//                 }
-//             }
-//         }
-
-//         stage('Install Dependencies') {
-//             parallel {
-//                 stage('Backend Dependencies') {
-//                     when { 
-//                         allOf {
-//                             environment name: 'BACKEND_CHANGED', value: 'true'
-//                             environment name: 'ERROR_FOUND', value: 'false'
-//                         }
-//                     }
-//                     steps {
-//                         dir('server') {
-//                             script {
-//                                 try {
-//                                     sh '''
-//                                         echo "Installing backend dependencies..."
-//                                         npm install || exit 1
-//                                         echo "Backend dependencies installed successfully"
-//                                         echo "Installing mongoose..."
-//                                         npm install mongoose || exit 1
-//                                         echo "mongoose installed successfully"
-//                                     '''
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Failed to install backend dependencies: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at backend dependency installation")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-                
-//                 stage('Frontend Dependencies') {
-//                     when { 
-//                         allOf {
-//                             environment name: 'FRONTEND_CHANGED', value: 'true'
-//                             environment name: 'ERROR_FOUND', value: 'false'
-//                         }
-//                     }
-//                     steps {
-//                         dir('client') {
-//                             script {
-//                                 try {
-//                                     sh '''
-//                                         echo "Installing frontend dependencies..."
-//                                         npm install || exit 1
-//                                         echo "Frontend dependencies installed successfully"
-//                                     '''
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Failed to install frontend dependencies: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at frontend dependency installation")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-//         stage('Run Tests') {
-//             when { environment name: 'ERROR_FOUND', value: 'false' }
-//             parallel {
-//                 stage('Backend Tests') {
-//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('server') {
-//                             script {
-//                                 try {
-//                                     sh 'npm test || exit 1'
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Backend tests failed: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at backend tests")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-                
-//                 stage('Frontend Tests') {
-//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('client') {
-//                             script {
-//                                 try {
-//                                     sh 'npm run cy:run || exit 1'
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Frontend tests failed: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at frontend tests")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-//         stage('Build') {
-//             when { environment name: 'ERROR_FOUND', value: 'false' }
-//             parallel {
-//                 stage('Build Backend') {
-//                     when { environment name: 'BACKEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('server') {
-//                             script {
-//                                 try {
-//                                     sh """
-//                                         docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} . || exit 1
-//                                         docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest || exit 1
-//                                     """
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Backend build failed: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at backend build")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-                
-//                 stage('Build Frontend') {
-//                     when { environment name: 'FRONTEND_CHANGED', value: 'true' }
-//                     steps {
-//                         dir('client') {
-//                             script {
-//                                 try {
-//                                     sh '''
-//                                         npm run build || exit 1
-//                                     '''
-//                                     sh """
-//                                         docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} . || exit 1
-//                                         docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest || exit 1
-//                                     """
-//                                 } catch (Exception e) {
-//                                     env.ERROR_FOUND = 'true'
-//                                     echo "Frontend build failed: ${e.getMessage()}"
-//                                     currentBuild.result = 'FAILURE'
-//                                     error("Pipeline failed at frontend build")
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     post {
-//         always {
-//             script {
-//                 try {
-//                     sh """
-//                         docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-//                         docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-//                     """
-//                 } catch (Exception e) {
-//                     echo "Warning: Failed to cleanup docker images: ${e.getMessage()}"
-//                 }
-//             }
-//         }
-//         failure {
-//             script {
-//                 echo "Pipeline failed! Check the logs above for detailed error information."
-//                 // Optional: Add notification steps here
-//             }
-//         }
-//     }
-// }
-
-
-
-
-
 pipeline {
     agent any
     
@@ -1726,16 +1459,15 @@ pipeline {
         NODE_ENV = 'production'
         DOCKER_REGISTRY = 'tranvuquanganh87'
         DOCKER_CREDENTIALS = credentials('docker-credentials')
-        JWT_SECRET = credentials('jwt-secret')
-        CLIENT_URL = 'http://0.0.0.0:8080'
-        BASE_API_URL = 'api'
-        MONGO_USER = credentials('mongo-user')
-        MONGO_PASSWORD = credentials('mongo-password')
+        PATH = "${env.PATH}:/usr/local/bin"
+        // Add error handling environment variable
+        ERROR_FOUND = 'false'
     }
 
     options {
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
         skipDefaultCheckout(true)
+        // Add fail-fast option
         parallelsAlwaysFailFast()
     }
 
@@ -1747,30 +1479,12 @@ pipeline {
                         sh '''
                             echo "Node version: $(node -v)"
                             echo "NPM version: $(npm -v)"
-                            echo "Docker version: $(docker --version)"
-                            echo "Docker Compose version: $(docker-compose --version)"
+                            echo "Current PATH: $PATH"
                         '''
                     } catch (Exception e) {
+                        echo "Failed to verify tools: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
-                        error("Pipeline failed at tool verification: ${e.getMessage()}")
-                    }
-                }
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                script {
-                    try {
-                        withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh '''
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                echo "Successfully logged in to Docker registry"
-                            '''
-                        }
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error("Pipeline failed at Docker login: ${e.getMessage()}")
+                        error("Pipeline failed at tool verification")
                     }
                 }
             }
@@ -1782,98 +1496,192 @@ pipeline {
                     try {
                         checkout scm
                     } catch (Exception e) {
+                        echo "Failed to checkout code: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
-                        error("Pipeline failed at checkout: ${e.getMessage()}")
+                        error("Pipeline failed at checkout")
                     }
                 }
             }
         }
 
-        stage('Build and Test Backend') {
-            when { changeset "server/**" }
-            steps {
-                dir('server') {
-                    script {
-                        try {
-                            // Start MongoDB service for testing
-                            sh '''
-                                docker-compose up -d mongodb-service
-                                sleep 10  # Wait for MongoDB to start
-                            '''
-
-                            // Build backend image
-                            sh """
-                                docker build -t ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} . --no-cache || exit 1
-                                
-                                # Run tests in container
-                                docker run --rm \
-                                    --network cosc2767-network \
-                                    -e MONGO_URI="mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb-service:27017" \
-                                    -e JWT_SECRET="${JWT_SECRET}" \
-                                    ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} npm test || exit 1
-                                
-                                # Tag and push if tests pass
-                                docker tag ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/nodejs-backend:latest
-                                docker push ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER}
-                                docker push ${DOCKER_REGISTRY}/nodejs-backend:latest
-                            """
-                        } catch (Exception e) {
-                            currentBuild.result = 'FAILURE'
-                            error("Backend build/test failed: ${e.getMessage()}")
-                        } finally {
-                            sh 'docker-compose down -v'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            when { changeset "client/**" }
-            steps {
-                dir('client') {
-                    script {
-                        try {
-                            // Build frontend with multi-stage Dockerfile
-                            sh """
-                                docker build -t ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} . --no-cache || exit 1
-                                docker tag ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} ${DOCKER_REGISTRY}/cosc2767-fe:latest
-                                docker push ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER}
-                                docker push ${DOCKER_REGISTRY}/cosc2767-fe:latest
-                            """
-                        } catch (Exception e) {
-                            currentBuild.result = 'FAILURE'
-                            error("Frontend build failed: ${e.getMessage()}")
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Integration Test') {
-            when {
-                anyOf {
-                    changeset "server/**"
-                    changeset "client/**"
-                }
-            }
+        stage('Detect Changes') {
             steps {
                 script {
                     try {
-                        // Start the full stack
-                        sh '''
-                            docker-compose -f docker-compose.yml up -d
-                            sleep 15  # Wait for services to be ready
-                            
-                            # Run integration tests
-                            curl --retry 5 --retry-delay 10 --retry-connrefused http://localhost:3000/api/health || exit 1
-                            curl --retry 5 --retry-delay 10 --retry-connrefused http://localhost:80 || exit 1
-                        '''
+                        def changes = []
+                        try {
+                            changes = sh(
+                                script: 'git diff --name-only HEAD^ HEAD',
+                                returnStdout: true
+                            ).trim().split('\n')
+                        } catch (err) {
+                            changes = sh(
+                                script: 'git ls-files',
+                                returnStdout: true
+                            ).trim().split('\n')
+                        }
+
+                        env.BACKEND_CHANGED = changes.findAll { it.startsWith('server/') }.size() > 0
+                        env.FRONTEND_CHANGED = changes.findAll { it.startsWith('client/') }.size() > 0
+                        
+                        echo "Backend changed: ${env.BACKEND_CHANGED}"
+                        echo "Frontend changed: ${env.FRONTEND_CHANGED}"
                     } catch (Exception e) {
+                        echo "Failed to detect changes: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
-                        error("Integration tests failed: ${e.getMessage()}")
-                    } finally {
-                        sh 'docker-compose down -v'
+                        error("Pipeline failed at change detection")
+                    }
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            parallel {
+                stage('Backend Dependencies') {
+                    when { 
+                        allOf {
+                            environment name: 'BACKEND_CHANGED', value: 'true'
+                            environment name: 'ERROR_FOUND', value: 'false'
+                        }
+                    }
+                    steps {
+                        dir('server') {
+                            script {
+                                try {
+                                    sh '''
+                                        echo "Installing backend dependencies..."
+                                        npm install || exit 1
+                                        echo "Backend dependencies installed successfully"
+                                        echo "Installing mongoose..."
+                                        npm install mongoose || exit 1
+                                        echo "mongoose installed successfully"
+                                    '''
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Failed to install backend dependencies: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend dependency installation")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Frontend Dependencies') {
+                    when { 
+                        allOf {
+                            environment name: 'FRONTEND_CHANGED', value: 'true'
+                            environment name: 'ERROR_FOUND', value: 'false'
+                        }
+                    }
+                    steps {
+                        dir('client') {
+                            script {
+                                try {
+                                    sh '''
+                                        echo "Installing frontend dependencies..."
+                                        npm install || exit 1
+                                        echo "Frontend dependencies installed successfully"
+                                    '''
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Failed to install frontend dependencies: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend dependency installation")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            when { environment name: 'ERROR_FOUND', value: 'false' }
+            parallel {
+                stage('Backend Tests') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            script {
+                                try {
+                                    sh 'npm test || exit 1'
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Backend tests failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend tests")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Frontend Tests') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            script {
+                                try {
+                                    sh 'npm run cy:run || exit 1'
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Frontend tests failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend tests")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            when { environment name: 'ERROR_FOUND', value: 'false' }
+            parallel {
+                stage('Build Backend') {
+                    when { environment name: 'BACKEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('server') {
+                            script {
+                                try {
+                                    sh """
+                                        docker build -t ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} . || exit 1
+                                        docker tag ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/backend:latest || exit 1
+                                    """
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Backend build failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at backend build")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Build Frontend') {
+                    when { environment name: 'FRONTEND_CHANGED', value: 'true' }
+                    steps {
+                        dir('client') {
+                            script {
+                                try {
+                                    sh '''
+                                        npm run build || exit 1
+                                    '''
+                                    sh """
+                                        docker build -t ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} . || exit 1
+                                        docker tag ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/frontend:latest || exit 1
+                                    """
+                                } catch (Exception e) {
+                                    env.ERROR_FOUND = 'true'
+                                    echo "Frontend build failed: ${e.getMessage()}"
+                                    currentBuild.result = 'FAILURE'
+                                    error("Pipeline failed at frontend build")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1884,27 +1692,219 @@ pipeline {
         always {
             script {
                 try {
-                    // Cleanup
-                    sh '''
-                        docker-compose down -v || true
-                        docker system prune -f || true
-                        
-                        # Remove specific images
-                        docker rmi ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} || true
-                        docker rmi ${DOCKER_REGISTRY}/nodejs-backend:latest || true
-                        docker rmi ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} || true
-                        docker rmi ${DOCKER_REGISTRY}/cosc2767-fe:latest || true
-                    '''
+                    sh """
+                        docker rmi ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+                        docker rmi ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+                    """
                 } catch (Exception e) {
-                    echo "Warning: Cleanup failed: ${e.getMessage()}"
+                    echo "Warning: Failed to cleanup docker images: ${e.getMessage()}"
                 }
             }
         }
-        success {
-            echo "Build successful! Images pushed to registry."
-        }
         failure {
-            echo "Build failed! Check the logs for details."
+            script {
+                echo "Pipeline failed! Check the logs above for detailed error information."
+                // Optional: Add notification steps here
+            }
         }
     }
 }
+
+
+
+
+
+// pipeline {
+//     agent any
+    
+//     tools {
+//         nodejs 'NodeJS'
+//     }
+
+//     environment {
+//         MONGODB_URI = credentials('mongodb-uri')
+//         NODE_ENV = 'production'
+//         DOCKER_REGISTRY = 'tranvuquanganh87'
+//         DOCKER_CREDENTIALS = credentials('docker-credentials')
+//         JWT_SECRET = credentials('jwt-secret')
+//         CLIENT_URL = 'http://0.0.0.0:8080'
+//         BASE_API_URL = 'api'
+//         MONGO_USER = credentials('mongo-user')
+//         MONGO_PASSWORD = credentials('mongo-password')
+//     }
+
+//     options {
+//         timeout(time: 30, unit: 'MINUTES')
+//         skipDefaultCheckout(true)
+//         parallelsAlwaysFailFast()
+//     }
+
+//     stages {
+//         stage('Verify Tools') {
+//             steps {
+//                 script {
+//                     try {
+//                         sh '''
+//                             echo "Node version: $(node -v)"
+//                             echo "NPM version: $(npm -v)"
+//                             echo "Docker version: $(docker --version)"
+//                             echo "Docker Compose version: $(docker-compose --version)"
+//                         '''
+//                     } catch (Exception e) {
+//                         currentBuild.result = 'FAILURE'
+//                         error("Pipeline failed at tool verification: ${e.getMessage()}")
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Docker Login') {
+//             steps {
+//                 script {
+//                     try {
+//                         withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//                             sh '''
+//                                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+//                                 echo "Successfully logged in to Docker registry"
+//                             '''
+//                         }
+//                     } catch (Exception e) {
+//                         currentBuild.result = 'FAILURE'
+//                         error("Pipeline failed at Docker login: ${e.getMessage()}")
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Checkout') {
+//             steps {
+//                 script {
+//                     try {
+//                         checkout scm
+//                     } catch (Exception e) {
+//                         currentBuild.result = 'FAILURE'
+//                         error("Pipeline failed at checkout: ${e.getMessage()}")
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Build and Test Backend') {
+//             when { changeset "server/**" }
+//             steps {
+//                 dir('server') {
+//                     script {
+//                         try {
+//                             // Start MongoDB service for testing
+//                             sh '''
+//                                 docker-compose up -d mongodb-service
+//                                 sleep 10  # Wait for MongoDB to start
+//                             '''
+
+//                             // Build backend image
+//                             sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} . --no-cache || exit 1
+                                
+//                                 # Run tests in container
+//                                 docker run --rm \
+//                                     --network cosc2767-network \
+//                                     -e MONGO_URI="mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb-service:27017" \
+//                                     -e JWT_SECRET="${JWT_SECRET}" \
+//                                     ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} npm test || exit 1
+                                
+//                                 # Tag and push if tests pass
+//                                 docker tag ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} ${DOCKER_REGISTRY}/nodejs-backend:latest
+//                                 docker push ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER}
+//                                 docker push ${DOCKER_REGISTRY}/nodejs-backend:latest
+//                             """
+//                         } catch (Exception e) {
+//                             currentBuild.result = 'FAILURE'
+//                             error("Backend build/test failed: ${e.getMessage()}")
+//                         } finally {
+//                             sh 'docker-compose down -v'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Build Frontend') {
+//             when { changeset "client/**" }
+//             steps {
+//                 dir('client') {
+//                     script {
+//                         try {
+//                             // Build frontend with multi-stage Dockerfile
+//                             sh """
+//                                 docker build -t ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} . --no-cache || exit 1
+//                                 docker tag ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} ${DOCKER_REGISTRY}/cosc2767-fe:latest
+//                                 docker push ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER}
+//                                 docker push ${DOCKER_REGISTRY}/cosc2767-fe:latest
+//                             """
+//                         } catch (Exception e) {
+//                             currentBuild.result = 'FAILURE'
+//                             error("Frontend build failed: ${e.getMessage()}")
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Integration Test') {
+//             when {
+//                 anyOf {
+//                     changeset "server/**"
+//                     changeset "client/**"
+//                 }
+//             }
+//             steps {
+//                 script {
+//                     try {
+//                         // Start the full stack
+//                         sh '''
+//                             docker-compose -f docker-compose.yml up -d
+//                             sleep 15  # Wait for services to be ready
+                            
+//                             # Run integration tests
+//                             curl --retry 5 --retry-delay 10 --retry-connrefused http://localhost:3000/api/health || exit 1
+//                             curl --retry 5 --retry-delay 10 --retry-connrefused http://localhost:80 || exit 1
+//                         '''
+//                     } catch (Exception e) {
+//                         currentBuild.result = 'FAILURE'
+//                         error("Integration tests failed: ${e.getMessage()}")
+//                     } finally {
+//                         sh 'docker-compose down -v'
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         always {
+//             script {
+//                 try {
+//                     // Cleanup
+//                     sh '''
+//                         docker-compose down -v || true
+//                         docker system prune -f || true
+                        
+//                         # Remove specific images
+//                         docker rmi ${DOCKER_REGISTRY}/nodejs-backend:${BUILD_NUMBER} || true
+//                         docker rmi ${DOCKER_REGISTRY}/nodejs-backend:latest || true
+//                         docker rmi ${DOCKER_REGISTRY}/cosc2767-fe:${BUILD_NUMBER} || true
+//                         docker rmi ${DOCKER_REGISTRY}/cosc2767-fe:latest || true
+//                     '''
+//                 } catch (Exception e) {
+//                     echo "Warning: Cleanup failed: ${e.getMessage()}"
+//                 }
+//             }
+//         }
+//         success {
+//             echo "Build successful! Images pushed to registry."
+//         }
+//         failure {
+//             echo "Build failed! Check the logs for details."
+//         }
+//     }
+// }

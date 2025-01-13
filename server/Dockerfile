@@ -1,5 +1,5 @@
 #build stage for serverrrrrrrrrrrrrrrrrrrrrr
-FROM node:18-alpine
+FROM node:22
 WORKDIR /usr/src/deplo
 COPY package*.json ./
 RUN npm install
