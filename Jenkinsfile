@@ -117,27 +117,27 @@ pipeline {
             }
         }
 
-        stage('Push Docker Images') {
-            steps {
-                script {
-                    // Login to Docker registry
-                    sh "echo ${DOCKER_CREDENTIALS_PSW} | docker login -u ${DOCKER_CREDENTIALS_USR} --password-stdin ${DOCKER_REGISTRY}"
+        // stage('Push Docker Images') {
+        //     steps {
+        //         script {
+        //             // Login to Docker registry
+        //             sh "echo ${DOCKER_CREDENTIALS_PSW} | docker login -u ${DOCKER_CREDENTIALS_USR} --password-stdin ${DOCKER_REGISTRY}"
                     
-                    if (env.BACKEND_CHANGED == 'true') {
-                        sh """
-                        docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
-                        docker push ${DOCKER_REGISTRY}/backend:latest
-                        """
-                    }
-                    if (env.FRONTEND_CHANGED == 'true') {
-                        sh """
-                        docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
-                        docker push ${DOCKER_REGISTRY}/frontend:latest
-                        """
-                    }
-                }
-            }
-        }
+        //             if (env.BACKEND_CHANGED == 'true') {
+        //                 sh """
+        //                 docker push ${DOCKER_REGISTRY}/backend:${BUILD_NUMBER}
+        //                 docker push ${DOCKER_REGISTRY}/backend:latest
+        //                 """
+        //             }
+        //             if (env.FRONTEND_CHANGED == 'true') {
+        //                 sh """
+        //                 docker push ${DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}
+        //                 docker push ${DOCKER_REGISTRY}/frontend:latest
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
 
         // stage('Deploy') {
         //     steps {
