@@ -1555,6 +1555,7 @@ pipeline {
                                         echo "Installing mongoose..."
                                         npm install mongoose || exit 1
                                         echo "mongoose installed successfully"
+                                        npm install mongodb-memory-server || exit 1
                                     '''
                                 } catch (Exception e) {
                                     env.ERROR_FOUND = 'true'
