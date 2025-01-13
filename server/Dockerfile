@@ -1,4 +1,4 @@
-#build stage for serverrrrrrrrrrrrrrrr
+#build stage for serverrrrrrrrrrrrrrrrrrrr
 FROM node:22
 WORKDIR /usr/src/deplo
 COPY package*.json ./
