@@ -2150,7 +2150,7 @@ pipeline {
                         dir('server') {
                             sh '''
                                  echo "Installing backend dependencies..."
-                                //  rm -rf node_modules package-lock.json
+                                 rm -rf node_modules package-lock.json
                                  echo "Installing mongodb-memory-server..."
                                  npm install mongodb-memory-server@latest --save-dev
                                  npm install --legacy-peer-deps
