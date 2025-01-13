@@ -2155,11 +2155,11 @@ pipeline {
                 echo "Installing backend dependencies..."
                 npm install --legacy-peer-deps
                 
-                echo "Installing mongodb-memory-server..."
-                 npm install mongodb-memory-server@10.1.3 --save-dev
+                // echo "Installing mongodb-memory-server..."
+                //  npm install mongodb-memory-server@10.1.3 --save-dev
                 
-                echo "Verifying dependency installation..."
-                npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
+                // echo "Verifying dependency installation..."
+                // npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
                             '''
                         }
                     }
@@ -2191,7 +2191,7 @@ pipeline {
                         dir('server') {
                             sh '''
                                 echo "Running backend tests..."
-                                NODE_ENV=test npx jest --detectOpenHandles --forceExit
+                                NODE_ENV=test npm jest --detectOpenHandles --forceExit
                             '''
                         }
                     }
