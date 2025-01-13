@@ -2153,11 +2153,11 @@ pipeline {
                 rm -rf node_modules package-lock.json
                 
                 echo "Installing backend dependencies..."
-                npm install --legacy-peer-deps
+                npm install 
 
                  echo "Installing mongodb-memory-server (specific version)..."
                 npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
-                npm install supertest --save dev || (echo "Installation failed!" && exit 1)
+                npm install supertest --save-dev || (echo "Installation failed!" && exit 1)
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 
                 echo "Verifying mongodb-memory-server installation..."
