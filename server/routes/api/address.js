@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Bring in Models & Helpers
+// Bring in Models & Helpers for auth
 const Address = require('../../models/address');
 const auth = require('../../middleware/auth');
 
