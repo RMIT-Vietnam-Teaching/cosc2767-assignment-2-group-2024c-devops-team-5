@@ -2186,7 +2186,7 @@ pipeline {
                         dir('server') {
                             sh '''
                                 echo "Running backend tests..."
-                                NODE_ENV=test npm jest --detectOpenHandles --forceExit
+                                NODE_ENV=test npm run test
                             '''
                         }
                     }
