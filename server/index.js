@@ -60,3 +60,8 @@ const server = app.listen(port, '0.0.0.0', () => {
 
 // Initialize WebSocket server
 socket(server);
+
+
+
+// Export the Express application for testing purposes
+module.exports = app;

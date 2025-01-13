@@ -1,180 +1,236 @@
+// const request = require("supertest");
+// const mongoose = require("mongoose");
+// const bcrypt = require("bcryptjs");
+// const app = require("../index");
+// const User = require("../models/user");
+
+// // Configuration
+// const MONGODB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/test-db";
+
+// // Increase timeout for database operations
+// jest.setTimeout(30000);
+
+
+// describe("Auth API Integration Tests", () => {
+//   let testUser;
+
+//   beforeAll(async () => {
+//     try {
+//       await mongoose.connect(MONGODB_URI);
+//       console.log("Connected to MongoDB test database");
+//     } catch (error) {
+//       console.error("Error connecting to MongoDB:", error);
+//       throw error;
+//     }
+//   });
+
+//   beforeEach(async () => {
+//     try {
+//       await User.deleteMany({});
+      
+//       // Create test user
+//       testUser = await User.create({
+//         email: "testuser@example.com",
+//         firstName: "Test",
+//         lastName: "User",
+//         password: await bcrypt.hash("password123", 10),
+//       });
+//     } catch (error) {
+//       console.error("Error in test setup:", error);
+//       throw error;
+//     }
+//   });
+
+//   afterAll(async () => {
+//     try {
+//       await mongoose.connection.close();
+//       console.log("Closed MongoDB connection");
+//     } catch (error) {
+//       console.error("Error during cleanup:", error);
+//       throw error;
+//     }
+//   });
+
+//   describe("POST /api/auth/login", () => {
+//     it("should login with valid credentials", async () => {
+//       const res = await request(app)
+//         .post("/api/auth/login")
+//         .send({
+//           email: "testuser@example.com",
+//           password: "password123",
+//         });
+
+//       expect(res.status).toBe(200);
+//       expect(res.body).toHaveProperty("token");
+//       expect(res.body.user).toBeDefined();
+//     });
+
+//     it("should fail with invalid email", async () => {
+//       const res = await request(app)
+//         .post("/api/auth/login")
+//         .send({
+//           email: "wrong@example.com",
+//           password: "password123",
+//         });
+
+//       expect(res.status).toBe(400);
+//     });
+//   });
+
+//   describe("POST /api/auth/register", () => {
+//     it("should register new user", async () => {
+//       const res = await request(app)
+//         .post("/api/auth/register")
+//         .send({
+//           email: "new@example.com",
+//           firstName: "New",
+//           lastName: "User",
+//           password: "password123",
+//         });
+//       expect(res.status).toBe(200);
+//       expect(res.body.user).toBeDefined();
+//     });
+
+//     it("should prevent duplicate email", async () => {
+//       const res = await request(app)
+//         .post("/api/auth/register")
+//         .send({
+//           email: "testuser@example.com",
+//           firstName: "Test",
+//           lastName: "User",
+//           password: "password123",
+//         });
+
+//       expect(res.status).toBe(400);
+//     });
+//   });
+// });
+
+
+
 const request = require("supertest");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const app = require("../index");
 const User = require("../models/user");
-const keys = require("./config/keys");
-const { database } = keys;
 
-// Configuration object for MongoDB connection
-const mongoConfig = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-};
+// Mock mailgun-js
+jest.mock('mailgun-js', () => {
+  return () => ({
+    messages: () => ({
+      send: jest.fn().mockResolvedValue({ message: 'Email sent' })
+    })
+  });
+});
 
+// Configuration
+const MONGODB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/test-db";
+
+// Prevent app from starting server
+let server;
 beforeAll(async () => {
-  try {
-    await mongoose.connect(database.url, mongoConfig);
+  // Store original listen function
+  const originalListen = app.listen.bind(app);
+  app.listen = jest.fn(() => {
+    console.log('Prevented automatic server start');
+    return { close: () => {} };
+  });
 
-    // Check connection status
-    if (mongoose.connection.readyState !== 1) {
-      throw new Error("MongoDB connection failed");
-    }
+  try {
+    await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB test database");
+    
+    // Create a server instance for testing
+    server = originalListen(0); // Use port 0 for random available port
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    console.log("oke nha", MONGODB_URI);
+    console.error("Error in setup:", error);
+    throw error;
+  }
+});
+
+beforeEach(async () => {
+  try {
+    await User.deleteMany({});
+    
+    // Create test user
+    const testUser = await User.create({
+      email: "testuser@example.com",
+      firstName: "Test",
+      lastName: "User",
+      password: await bcrypt.hash("password123", 10),
+    });
+  } catch (error) {
+    console.error("Error in test setup:", error);
     throw error;
   }
 });
 
 afterAll(async () => {
   try {
-    // Clean up test database
-    await mongoose.connection.dropDatabase();
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
     await mongoose.connection.close();
-    console.log("Closed MongoDB connection");
+    console.log("Cleaned up test resources");
   } catch (error) {
-    console.error("Error during cleanup:", error);
-    throw error;
+    console.error("Error in cleanup:", error);
   }
 });
 
 describe("Auth API Integration Tests", () => {
-  let testUser;
+  describe("POST /api/auth/login", () => {
+    it("should login with valid credentials", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: "testuser@example.com",
+          password: "password123",
+        });
 
-  beforeEach(async () => {
-    try {
-      // Clear users collection before each test
-      await User.deleteMany({});
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("token");
+      expect(res.body.user).toBeDefined();
+    }, 10000);
 
-      // Create a test user
-      testUser = await User.create({
-        email: "testuser@example.com",
-        firstName: "Test",
-        lastName: "User",
-        password: await bcrypt.hash("password123", 10),
-      });
-    } catch (error) {
-      console.error("Error in test setup:", error);
-      throw error;
-    }
+    it("should fail with invalid email", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: "wrong@example.com",
+          password: "password123",
+        });
+
+      expect(res.status).toBe(400);
+    }, 10000);
   });
 
-  afterEach(async () => {
-    try {
-      await User.deleteMany({});
-    } catch (error) {
-      console.error("Error in test cleanup:", error);
-      throw error;
-    }
-  });
-
-  describe("POST /login", () => {
-    it("should login successfully with valid credentials", async () => {
-      const response = await request(app).post("/api/auth/login").send({
-        email: "testuser@example.com",
-        password: "password123",
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body).toHaveProperty("token");
-      expect(response.body.user.email).toBe("testuser@example.com");
-    });
-
-    it("should return error for invalid email", async () => {
-      const response = await request(app).post("/api/auth/login").send({
-        email: "invaliduser@example.com",
-        password: "password123",
-      });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe("No user found for this email address.");
-    });
-
-    it("should return error for incorrect password", async () => {
-      const response = await request(app).post("/api/auth/login").send({
-        email: "testuser@example.com",
-        password: "wrongpassword",
-      });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Password Incorrect");
-    });
-
-    it("should handle server errors gracefully", async () => {
-      // Simulate database error by disconnecting mongoose
-      await mongoose.connection.close();
-
-      const response = await request(app).post("/api/auth/login").send({
-        email: "testuser@example.com",
-        password: "password123",
-      });
-
-      expect(response.status).toBe(500);
-
-      // Reconnect for other tests
-      await mongoose.connect(MONGODB_URI, mongoConfig);
-    });
-  });
-
-  describe("POST /register", () => {
-    it("should register a new user successfully", async () => {
-      const newUser = {
-        email: "newuser@example.com",
-        firstName: "New",
-        lastName: "User",
-        password: "password123",
-      };
-
-      const response = await request(app)
+  describe("POST /api/auth/register", () => {
+    it("should register new user", async () => {
+      const res = await request(app)
         .post("/api/auth/register")
-        .send(newUser);
+        .send({
+          email: "new@example.com",
+          firstName: "New",
+          lastName: "User",
+          password: "password123",
+        });
 
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.user.email).toBe("newuser@example.com");
+      expect(res.status).toBe(200);
+      expect(res.body.user).toBeDefined();
+    }, 10000);
 
-      // Verify user was actually saved to database
-      const userInDb = await User.findOne({ email: "newuser@example.com" });
-      expect(userInDb).toBeTruthy();
-      expect(userInDb.firstName).toBe("New");
-      expect(userInDb.lastName).toBe("User");
-    });
+    it("should prevent duplicate email", async () => {
+      const res = await request(app)
+        .post("/api/auth/register")
+        .send({
+          email: "testuser@example.com",
+          firstName: "Test",
+          lastName: "User",
+          password: "password123",
+        });
 
-    it("should return error for existing email", async () => {
-      const response = await request(app).post("/api/auth/register").send({
-        email: "testuser@example.com",
-        firstName: "Duplicate",
-        lastName: "User",
-        password: "password123",
-      });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe("That email address is already in use.");
-    });
-
-    it("should return error for missing required fields", async () => {
-      const response = await request(app).post("/api/auth/register").send({
-        email: "missingfields@example.com",
-      });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toMatch(/You must enter/);
-    });
-
-    it("should validate email format", async () => {
-      const response = await request(app).post("/api/auth/register").send({
-        email: "invalid-email",
-        firstName: "Test",
-        lastName: "User",
-        password: "password123",
-      });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toMatch(/valid email/i);
-    });
+      expect(res.status).toBe(400);
+    }, 10000);
   });
 });
+

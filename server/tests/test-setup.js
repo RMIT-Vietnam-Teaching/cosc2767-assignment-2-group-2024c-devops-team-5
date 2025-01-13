@@ -1,12 +1,5 @@
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const { database } = keys;
-
-
-const mongoConfig = {
-  useNewUrlParser: true,
-  serverSelectionTimeoutMS: 5000,
-};
 
 
 let mongoServer;
@@ -20,7 +13,10 @@ beforeAll(async () => {
   // const uri = mongoServer.getUri();
 
   mongoose.set('strictQuery', false); 
-    await mongoose.connect(database.url, mongoConfig);
+   await mongoose.connect(process.env.MONGO_URI, {
+         useNewUrlParser: true,
+         useUnifiedTopology: true
+       });
 });
 
 afterAll(async () => {

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const app = require('../index'); 
 const Address = require('../models/address');
 const authMiddleware = require('../middleware/auth');
-const { database } = keys;
 jest.mock('../middleware/auth', () => jest.fn());
 
 
@@ -14,7 +13,7 @@ const mongoConfig = {
 };
 
 beforeAll(async () => {
-   await mongoose.connect(database.url, mongoConfig);
+   await mongoose.connect(process.env.MONGO_URI, mongoConfig);
 });
 
 afterAll(async () => {
