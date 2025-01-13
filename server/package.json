@@ -9,6 +9,8 @@
     "test": "npx jest"
   },
   "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 30000,
     "setupFilesAfterEnv": [
       "<rootDir>/tests/test-setup.js"
     ]

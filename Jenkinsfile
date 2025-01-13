@@ -2133,22 +2133,26 @@ pipeline {
             steps {
                 dir('server') {
                     sh '''
-                        # Remove node_modules and package-lock.json for clean install
+                        # Clean install
                         rm -rf node_modules package-lock.json
-
-                        # Install base dependencies
-                        npm install
-
-                        # Install test dependencies explicitly
-                        npm install --save-dev jest@latest
-                        npm install --save mongoose@latest
-                        npm install --save-dev mongodb-memory-server@latest
+                        
+                        # Install Jest first
+                        npm install jest@latest --save-dev --force
+                        
+                        # Install other dependencies
+                        npm install --legacy-peer-deps
+                        npm install mongoose@latest --save --force
+                        npm install mongodb-memory-server@latest --save-dev --force
                         
                         # Verify installations
-                        echo "Checking installed packages:"
-                        npm list jest
-                        npm list mongoose
+                        echo "Verifying Jest installation:"
+                        ./node_modules/.bin/jest --version
+                        
+                        echo "Verifying MongoDB Memory Server:"
                         npm list mongodb-memory-server
+                        
+                        echo "Verifying Mongoose:"
+                        npm list mongoose
                         
                         # Add execute permissions
                         chmod +x node_modules/.bin/*
@@ -2162,14 +2166,13 @@ pipeline {
                 dir('client') {
                     sh '''
                         rm -rf node_modules package-lock.json
-                        npm install
+                        npm install --legacy-peer-deps
                     '''
                 }
             }
         }
     }
 }
-
         stage('Run Tests') {
     parallel {
         stage('Backend Tests') {
