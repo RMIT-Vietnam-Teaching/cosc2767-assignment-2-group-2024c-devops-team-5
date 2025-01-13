@@ -2159,7 +2159,8 @@ pipeline {
                 npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 npm install chalk|| (echo "Installation failed!" && exit 1)
-                npm install chalk --save-dev || (echo "Installation failed!" && exit 1)
+                // npm install chalk --save-dev || (echo "Installation failed!" && exit 1)
+                npm list chalk || (echo "chalk not installed!" && exit 1)
                 
                 echo "Verifying mongodb-memory-server installation..."
                 npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
