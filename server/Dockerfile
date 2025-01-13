@@ -1,4 +1,4 @@
-#build stage for server
+#build stage for serverrrrrr
 FROM node:22-alpine
 WORKDIR /usr/src/deplo
 COPY package*.json ./
