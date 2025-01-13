@@ -15,7 +15,7 @@ const Pagination = props => {
   };
 
   return (
-    <div className='pagination-box'>
+    <div className='pagination-box' data-cy="pagination">
       <ReactPaginate
         nextLabel='next >'
         onPageChange={handlePageClick}
@@ -35,6 +35,7 @@ const Pagination = props => {
         containerClassName='pagination'
         activeClassName='active'
         renderOnZeroPageCount={null}
+        data-cy="pagination-component"
       />
     </div>
   );

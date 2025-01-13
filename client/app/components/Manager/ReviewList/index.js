@@ -36,7 +36,7 @@ const ReviewList = props => {
     if (review.product) {
       const product = review.product;
       return (
-        <div className='d-flex flex-column justify-content-center align-items-center'>
+        <div className='d-flex flex-column justify-content-center align-items-center' data-cy="review-product">
           <img
             className='item-image'
             src={`${
@@ -44,6 +44,8 @@ const ReviewList = props => {
                 ? product.imageUrl
                 : '/images/placeholder-image.png'
             }`}
+            alt={product.name || 'Product'}
+            data-cy="review-product-image"
           />
         </div>
       );
@@ -51,30 +53,31 @@ const ReviewList = props => {
   };
 
   return (
-    <div className='r-list'>
+    <div className='r-list' data-cy="review-list">
       {reviews.map((review, index) => (
-        <div key={index} className='review-box'>
+        <div key={index} className='review-box' data-cy="review-list-item">
           <div className='mb-3 p-4'>
             <div className='d-flex flex-row mx-0 mb-2 mb-lg-3 align-items-center justify-content-between'>
               <div className='review-content'>
                 <div className='d-flex flex-row mx-0 mb-2 align-items-center justify-content-between'>
-                  <p className='mb-0 fw-medium fs-16 text-truncate'>
+                  <p className='mb-0 fw-medium fs-16 text-truncate' data-cy="review-title">
                     {review.title}
                   </p>
                   <div className='d-block d-lg-none'>{getAvatar(review)}</div>
                 </div>
-                <p className='mb-0 fw-normal fs-14 word-break-all'>
+                <p className='mb-0 fw-normal fs-14 word-break-all' data-cy="review-body">
                   {review.review}
                 </p>
               </div>
               <div className='d-none d-lg-block'>{getAvatar(review)}</div>
             </div>
             <div className='d-flex flex-column flex-lg-row mx-0 mb-3 align-items-start justify-content-between'>
-              <div className='w-100 mb-3 mb-lg-0 review-product-box'>
+              <div className='w-100 mb-3 mb-lg-0 review-product-box' data-cy="review-product-box">
                 {review.product ? (
                   <Link
                     to={`/product/${review.product.slug}`}
                     className='default-link'
+                    data-cy="review-product-link"
                   >
                     {review?.product.name}
                   </Link>
@@ -93,16 +96,17 @@ const ReviewList = props => {
                   halfIcon={<i className='fa fa-star-half-alt' />}
                   filledIcon={<i className='fa fa-star' />}
                   value={review.rating}
+                  data-cy="review-rating"
                 />
               </div>
               {getProduct(review)}
             </div>
-            <label className='text-black'>{`Review Added on ${formatDate(
+            <label className='text-black' data-cy="review-date">{`Review Added on ${formatDate(
               review.created
             )}`}</label>
             <hr />
             {review.status === REVIEW_STATUS.Approved ? (
-              <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0'>
+              <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0' data-cy="review-approved-actions">
                 <div className='d-flex flex-row mx-0'>
                   <CheckIcon className='text-green' />
                   <p className='ml-2 mb-0'>Approved</p>
@@ -112,6 +116,7 @@ const ReviewList = props => {
                   text='Delete'
                   icon={<TrashIcon width={15} />}
                   onClick={() => deleteReview(review._id)}
+                  data-cy="delete-review-button"
                 />
               </div>
             ) : review.status === REVIEW_STATUS.Rejected ? (
@@ -120,24 +125,26 @@ const ReviewList = props => {
                   <RefreshIcon className='text-primary' />
                   <p className='fw-medium ml-3 mb-0'>Re Approve Review</p>
                 </div>
-                <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0'>
+                <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0' data-cy="review-rejected-actions">
                   <Button
                     className='text-uppercase'
                     variant='primary'
                     size='md'
                     text='Approve'
                     onClick={() => approveReview(review)}
+                    data-cy="approve-review-button"
                   />
                   <Button
                     className='mt-3 mt-lg-0'
                     text='Delete'
                     icon={<TrashIcon width={15} />}
                     onClick={() => deleteReview(review._id)}
+                    data-cy="delete-review-button"
                   />
                 </div>
               </>
             ) : (
-              <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0'>
+              <div className='d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mx-0' data-cy="review-pending-actions">
                 <div className='d-flex flex-column flex-lg-row mx-0'>
                   <Button
                     variant='dark'
@@ -145,6 +152,7 @@ const ReviewList = props => {
                     size='md'
                     text='Approve'
                     onClick={() => approveReview(review)}
+                    data-cy="approve-review-button"
                   />
                   <Button
                     variant='danger'
@@ -152,6 +160,7 @@ const ReviewList = props => {
                     size='md'
                     text='Reject'
                     onClick={() => rejectReview(review)}
+                    data-cy="reject-review-button"
                   />
                 </div>
                 <Button
@@ -159,6 +168,7 @@ const ReviewList = props => {
                   text='Delete'
                   icon={<TrashIcon width={15} />}
                   onClick={() => deleteReview(review._id)}
+                  data-cy="delete-review-button"
                 />
               </div>
             )}

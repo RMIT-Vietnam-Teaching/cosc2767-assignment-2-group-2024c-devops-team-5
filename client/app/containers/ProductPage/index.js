@@ -146,7 +146,7 @@ class ProductPage extends React.PureComponent {
                             product.quantity <= 0 && !shopFormErrors['quantity']
                           }
                           text='Add To Bag'
-                          className='bag-btn'
+                          className='btn-add-to-bag'
                           icon={<BagIcon />}
                           data-cy='add-to-bag-button'
                           onClick={() => handleAddToCart(product)}

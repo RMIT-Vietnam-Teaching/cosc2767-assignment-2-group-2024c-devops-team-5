@@ -36,7 +36,7 @@ class Review extends React.PureComponent {
     const displayReviews = reviews && reviews.length > 0;
 
     return (
-      <div className='review-dashboard'>
+      <div className='review-dashboard' data-cy='review-dashboard'>
         <SubPage title={'Reviews'} isMenuOpen={null}>
           {isLoading && <LoadingIndicator />}
 
@@ -44,11 +44,12 @@ class Review extends React.PureComponent {
             <Pagination
               totalPages={advancedFilters.totalPages}
               onPagination={fetchReviews}
+              data-cy="pagination"
             />
           )}
           {displayReviews && (
             <>
-              <SearchResultMeta label='reviews' count={advancedFilters.count} />
+              <SearchResultMeta label='reviews' count={advancedFilters.count} data-cy="search-result-meta"/>
               <ReviewList
                 reviews={reviews}
                 approveReview={approveReview}
@@ -59,7 +60,7 @@ class Review extends React.PureComponent {
           )}
 
           {!isLoading && !displayReviews && (
-            <NotFound message='No reviews found.' />
+            <NotFound message='No reviews found.' data-cy="not-found"/>
           )}
         </SubPage>
       </div>

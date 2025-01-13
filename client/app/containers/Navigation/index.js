@@ -230,6 +230,7 @@ class Navigation extends React.PureComponent {
                   className='d-none d-md-block'
                   cartItems={cartItems}
                   onClick={toggleCart}
+                  class='cart-icon'
                 />
                 <Nav navbar>
                   {brands && brands.length > 0 && (
