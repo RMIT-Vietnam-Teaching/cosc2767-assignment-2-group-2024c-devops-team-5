@@ -2209,7 +2209,7 @@ pipeline {
                     }
                     steps {
                         dir('client') {
-                            sh 'CI=true cy:run'
+                            sh 'CI=true  npm run cy:run '
                         }
                     }
                 }
