@@ -1,15 +1,12 @@
-const express = require('express');
+import express from 'express';
+import Address from '../../models/address.js';
+import auth from '../../middleware/auth.js';
 const router = express.Router();
-
-// Bring in Models & Helpers for auth
-const Address = require('../../models/address');
-const auth = require('../../middleware/auth');
 
 // add address api
 router.post('/add', auth, async (req, res) => {
   try {
     const user = req.user;
-
     const address = new Address({
       ...req.body,
       user: user._id
@@ -102,4 +99,4 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

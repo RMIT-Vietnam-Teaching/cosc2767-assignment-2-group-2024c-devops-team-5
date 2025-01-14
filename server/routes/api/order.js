@@ -1,15 +1,15 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Bring in Models & Utils
-const Order = require('../../models/order');
-const Cart = require('../../models/cart');
-const Product = require('../../models/product');
-const auth = require('../../middleware/auth');
-const mailgun = require('../../services/mailgun');
-const store = require('../../utils/store');
-const { ROLES, CART_ITEM_STATUS } = require('../../constants');
+import Order from '../../models/order.js';
+import { Cart } from '../../models/cart.js';
+import Product from '../../models/product.js';
+import auth from '../../middleware/auth.js';
+import mailgun from '../../services/mailgun.js';
+import store from '../../utils/store.js';
+import { ROLES, CART_ITEM_STATUS } from '../../constants/index.js';
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -347,4 +347,4 @@ const increaseQuantity = products => {
   Product.bulkWrite(bulkOptions);
 };
 
-module.exports = router;
+export default router;

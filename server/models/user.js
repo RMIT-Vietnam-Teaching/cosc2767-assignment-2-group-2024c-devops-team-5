@@ -1,8 +1,7 @@
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import { ROLES, EMAIL_PROVIDER } from '../constants/index.js';
 
-const { ROLES, EMAIL_PROVIDER } = require('../constants');
-
-const { Schema } = Mongoose;
+const { Schema } = mongoose;
 
 // User Schema
 const UserSchema = new Schema({
@@ -57,4 +56,4 @@ const UserSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('User', UserSchema);
+export default mongoose.model('User', UserSchema);

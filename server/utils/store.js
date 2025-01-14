@@ -1,24 +1,18 @@
-const Product = require('../models/product');
-const taxConfig = require('../config/tax');
+import Product from '../models/product.js';
+import taxConfig from '../config/tax.js';
 
-// This function disables a list of products by setting their isActive field to false.
-// It uses MongoDB's bulkWrite operation to update multiple documents in one go.
-exports.disableProducts = products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item._id },
-        update: { isActive: false }
-      }
-    };
-  });
+const disableProducts = products => {
+  let bulkOptions = products.map(item => ({
+    updateOne: {
+      filter: { _id: item._id },
+      update: { isActive: false }
+    }
+  }));
 
   Product.bulkWrite(bulkOptions);
 };
 
-// This function calculates the total tax amount for an order.
-// It iterates through each product in the order, calculates the tax for each product, and updates the order's total tax.
-exports.caculateTaxAmount = order => {
+const caculateTaxAmount = order => {
   try {
     const taxRate = taxConfig.stateTaxRate;
 
@@ -75,8 +69,7 @@ exports.caculateTaxAmount = order => {
   }
 };
 
-// This function calculates the total price of an order by summing up the total price of each product that is not cancelled.
-exports.caculateOrderTotal = order => {
+const caculateOrderTotal = order => {
   const total = order.products
     .filter(item => item.status !== 'Cancelled')
     .reduce((sum, current) => sum + current.totalPrice, 0);
@@ -84,9 +77,7 @@ exports.caculateOrderTotal = order => {
   return total;
 };
 
-// This function calculates the sales tax for a list of items.
-// It updates each item with its total price, total tax, and price with tax.
-exports.caculateItemsSalesTax = items => {
+const caculateItemsSalesTax = items => {
   const taxRate = taxConfig.stateTaxRate;
 
   const products = items.map(item => {
@@ -114,18 +105,23 @@ exports.caculateItemsSalesTax = items => {
   return products;
 };
 
-// This function formats a list of orders by updating their total and calculating the tax amount for each order.
-exports.formatOrders = orders => {
-  const newOrders = orders.map(order => {
-    return {
-      _id: order._id,
-      total: parseFloat(Number(order.total.toFixed(2))),
-      created: order.created,
-      products: order?.cart?.products
-    };
-  });
+const formatOrders = orders => {
+  const newOrders = orders.map(order => ({
+    _id: order._id,
+    total: parseFloat(Number(order.total.toFixed(2))),
+    created: order.created,
+    products: order?.cart?.products
+  }));
 
-  return newOrders.map(order => {
-    return order?.products ? this.caculateTaxAmount(order) : order;
-  });
+  return newOrders.map(order => 
+    order?.products ? caculateTaxAmount(order) : order
+  );
+};
+
+export default {
+  disableProducts,
+  caculateTaxAmount,
+  caculateOrderTotal,
+  caculateItemsSalesTax,
+  formatOrders
 };

@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const mailchimp = require('../../services/mailchimp');
-const mailgun = require('../../services/mailgun');
+import mailchimp from '../../services/mailchimp.js';
+import mailgun from '../../services/mailgun.js';
 
 router.post('/subscribe', async (req, res) => {
   const email = req.body.email;
@@ -27,4 +27,4 @@ router.post('/subscribe', async (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

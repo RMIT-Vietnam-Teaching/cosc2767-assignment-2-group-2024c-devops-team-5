@@ -1,6 +1,5 @@
-const Mailchimp = require('mailchimp-api-v3');
-
-const keys = require('../config/keys');
+import Mailchimp from 'mailchimp-api-v3';
+import keys from '../config/keys.js';
 
 const { key, listKey } = keys.mailchimp;
 
@@ -16,8 +15,7 @@ class MailchimpService {
 
 const mailchimp = new MailchimpService().init();
 
-// Email notification logic is a work in progress, ignore this for now
-exports.subscribeToNewsletter = async email => {
+export const subscribeToNewsletter = async email => {
   try {
     return await mailchimp.post(`lists/${listKey}/members`, {
       email_address: email,
@@ -27,3 +25,5 @@ exports.subscribeToNewsletter = async email => {
     return error;
   }
 };
+
+export default mailchimp;

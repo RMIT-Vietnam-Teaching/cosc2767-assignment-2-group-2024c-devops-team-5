@@ -1,18 +1,17 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const passport = require('passport');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import passport from 'passport';
 
-const auth = require('../../middleware/auth');
+import auth from '../../middleware/auth.js';
+import User from '../../models/user.js';
+import mailchimp from '../../services/mailchimp.js';
+import mailgun from '../../services/mailgun.js';
+import keys from '../../config/keys.js';
+import { EMAIL_PROVIDER, JWT_COOKIE } from '../../constants/index.js';
 
-// Bring in Models & Helpers
-const User = require('../../models/user');
-const mailchimp = require('../../services/mailchimp');
-const mailgun = require('../../services/mailgun');
-const keys = require('../../config/keys');
-const { EMAIL_PROVIDER, JWT_COOKIE } = require('../../constants');
 
 const { secret, tokenLife } = keys.jwt;
 
@@ -349,7 +348,4 @@ router.get(
   }
 );
 
-module.exports = router;
-
-// export default router;
-
+export default router;

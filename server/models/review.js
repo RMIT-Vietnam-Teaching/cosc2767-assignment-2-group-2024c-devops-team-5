@@ -1,8 +1,8 @@
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const { REVIEW_STATUS } = require('../constants');
+import { REVIEW_STATUS } from '../constants/index.js';
 
-const { Schema } = Mongoose;
+const { Schema } = mongoose;
 
 // Review Schema
 const ReviewSchema = new Schema({
@@ -48,4 +48,4 @@ const ReviewSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('Review', ReviewSchema);
+export default mongoose.model('Review', ReviewSchema);

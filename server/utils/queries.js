@@ -1,27 +1,22 @@
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Function to get store products based on price and rating filters
-exports.getStoreProductsQuery = (min, max, rating) => {
-  // Convert input values to numbers
+const getStoreProductsQuery = (min, max, rating) => {
   rating = Number(rating);
   max = Number(max);
   min = Number(min);
 
-  // Create price filter object
   const priceFilter = min && max ? { price: { $gte: min, $lte: max } } : {};
-  // Create rating filter object
   const ratingFilter = rating
     ? { rating: { $gte: rating } }
     : { rating: { $gte: rating } };
 
-  // Create match query object
   const matchQuery = {
     isActive: true,
     price: priceFilter.price,
     averageRating: ratingFilter.rating
   };
 
-  // Define the aggregation pipeline
   const basicQuery = [
     // Lookup brands collection
     {
@@ -98,9 +93,8 @@ exports.getStoreProductsQuery = (min, max, rating) => {
 };
 
 // Function to get store products wishlist for a user
-exports.getStoreProductsWishListQuery = userId => {
+const getStoreProductsWishListQuery = userId => {
   const wishListQuery = [
-    // Lookup wishlists collection
     {
       $lookup: {
         from: 'wishlists',
@@ -110,7 +104,7 @@ exports.getStoreProductsWishListQuery = userId => {
             $match: {
               $and: [
                 { $expr: { $eq: ['$$product', '$product'] } },
-                { user: new Mongoose.Types.ObjectId(userId) }
+                { user: new mongoose.Types.ObjectId(userId) }
               ]
             }
           }
@@ -118,7 +112,6 @@ exports.getStoreProductsWishListQuery = userId => {
         as: 'isLiked'
       }
     },
-    // Add isLiked field to the document
     {
       $addFields: {
         isLiked: { $arrayElemAt: ['$isLiked.isLiked', 0] }
@@ -128,3 +121,5 @@ exports.getStoreProductsWishListQuery = userId => {
 
   return wishListQuery;
 };
+
+export { getStoreProductsQuery, getStoreProductsWishListQuery };

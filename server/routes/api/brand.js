@@ -1,14 +1,14 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import Brand from '../../models/brand.js';
+import Product from '../../models/product.js';
+import Merchant from '../../models/merchant.js';
+import auth from '../../middleware/auth.js';
+import role from '../../middleware/role.js';
+import store from '../../utils/store.js';
 
-// Bring in Models & Utils
-const Brand = require('../../models/brand');
-const Product = require('../../models/product');
-const Merchant = require('../../models/merchant');
-const auth = require('../../middleware/auth');
-const role = require('../../middleware/role');
-const store = require('../../utils/store');
-const { ROLES, MERCHANT_STATUS } = require('../../constants');
+import { ROLES, MERCHANT_STATUS } from '../../constants/index.js';
+
+const router = express.Router();
 
 router.post('/add', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
@@ -250,4 +250,4 @@ const deactivateMerchant = async brandId => {
   });
 };
 
-module.exports = router;
+export default router;

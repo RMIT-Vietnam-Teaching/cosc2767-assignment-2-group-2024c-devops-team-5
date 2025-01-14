@@ -1,7 +1,6 @@
-const Mailgun = require('mailgun-js');
-
-const template = require('../config/template');
-const keys = require('../config/keys');
+import Mailgun from 'mailgun-js';
+import template from '../config/template.js';
+import keys from '../config/keys.js';
 
 const { key, domain, sender } = keys.mailgun;
 
@@ -20,18 +19,15 @@ class MailgunService {
 
 const mailgun = new MailgunService().init();
 
-// Email notification logic is a work in progress, ignore this for now
-exports.sendEmail = async (email, type, host, data) => {
+export const sendEmail = async (email, type, host, data) => {
   try {
     const message = prepareTemplate(type, host, data);
-
     const config = {
       from: `MERN Store! <${sender}>`,
       to: email,
       subject: message.subject,
       text: message.text
     };
-
     return await mailgun.messages().send(config);
   } catch (error) {
     return error;
@@ -88,3 +84,5 @@ const prepareTemplate = (type, host, data) => {
 
   return message;
 };
+
+export default mailgun;

@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Bring in Models & Helpers
-const Wishlist = require('../../models/wishlist');
-const auth = require('../../middleware/auth');
+import Wishlist from '../../models/wishlist.js';
+import auth from '../../middleware/auth.js';
 
 router.post('/', auth, async (req, res) => {
   try {
@@ -70,4 +70,4 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

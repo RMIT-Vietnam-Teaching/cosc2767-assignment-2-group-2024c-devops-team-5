@@ -1,13 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const passport = require('passport');
+import express from 'express';
+import passport from 'passport';
+import Category from '../../models/category.js';
+import auth from '../../middleware/auth.js';
+import role from '../../middleware/role.js';
+import store from '../../utils/store.js';
+import { ROLES } from '../../constants/index.js';
 
-// Bring in Models & Utils
-const Category = require('../../models/category');
-const auth = require('../../middleware/auth');
-const role = require('../../middleware/role');
-const store = require('../../utils/store');
-const { ROLES } = require('../../constants');
+const router = express.Router();
 
 router.post('/add', auth, role.check(ROLES.Admin), (req, res) => {
   const name = req.body.name;
@@ -179,4 +178,4 @@ router.delete(
   }
 );
 
-module.exports = router;
+export default router;

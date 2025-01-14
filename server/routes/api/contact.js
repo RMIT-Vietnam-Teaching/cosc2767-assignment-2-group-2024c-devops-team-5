@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Bring in Models & Helpers
-const Contact = require('../../models/contact');
-const mailgun = require('../../services/mailgun');
+import Contact from '../../models/contact.js';
+import mailgun from '../../services/mailgun.js';
 
 router.post('/add', async (req, res) => {
   try {
@@ -57,4 +57,5 @@ router.post('/add', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
+

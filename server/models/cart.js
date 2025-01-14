@@ -1,8 +1,8 @@
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import { CART_ITEM_STATUS } from '../constants/index.js';
 
 const { CART_ITEM_STATUS } = require('../constants');
-
-const { Schema } = Mongoose;
+const { Schema } = mongoose;
 
 // Cart Item Schema
 const CartItemSchema = new Schema({
@@ -40,7 +40,7 @@ const CartItemSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('CartItem', CartItemSchema);
+export const CartItem = mongoose.model('CartItem', CartItemSchema);
 
 // Cart Schema
 const CartSchema = new Schema({
@@ -56,4 +56,4 @@ const CartSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('Cart', CartSchema);
+export const Cart = mongoose.model('Cart', CartSchema);

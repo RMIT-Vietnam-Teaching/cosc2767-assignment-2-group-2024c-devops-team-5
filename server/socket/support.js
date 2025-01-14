@@ -1,14 +1,11 @@
-const uuidv4 = require('uuid').v4;
+import { v4 as uuidv4 } from 'uuid';
 
 const users = [];
 const messages = [];
 
-// Function to find a user by their ID
 const findUserById = id => users.find(x => x.id === id);
-// Function to find a user by their socket ID
 const findUserBySocketId = socketId => users.find(x => x.socketId === socketId);
 
-// Function to update the status of a user
 const updatedUserStatus = (user, status) => {
   const existingUser = findUserById(user.id);
   if (existingUser) {
@@ -16,27 +13,16 @@ const updatedUserStatus = (user, status) => {
   }
 };
 
-// Function to handle support-related socket events
-exports.supportHandler = (io, socket) => {
-  // Event handler for user connection
+export const supportHandler = (io, socket) => {
   socket.on('connectUser', async () => {
     const user = findUserBySocketId(socket.id);
-
-    /* 
-      if user connected is admin => notify everyone
-      if user connected is not admin => notify all admins
-    */
     if (user) {
       user.online = true;
       if (user.isAdmin) {
         socket.broadcast.emit('connectUser', user);
       } else {
-        const admins = users.filter(
-          x => x.isAdmin === true && x.online === true
-        );
-        admins.map(admin =>
-          socket.to(admin.socketId).emit('connectUser', user)
-        );
+        const admins = users.filter(x => x.isAdmin === true && x.online === true);
+        admins.map(admin => socket.to(admin.socketId).emit('connectUser', user));
       }
     }
   });
@@ -93,5 +79,4 @@ exports.supportHandler = (io, socket) => {
   });
 };
 
-exports.users = users;
-exports.findUserById = findUserById;
+export { users, findUserById };

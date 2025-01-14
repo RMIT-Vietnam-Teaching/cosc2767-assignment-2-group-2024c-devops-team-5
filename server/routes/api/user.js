@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Bring in Models & Helpers
-const User = require('../../models/user');
-const auth = require('../../middleware/auth');
-const role = require('../../middleware/role');
-const { ROLES } = require('../../constants');
+import User from '../../models/user.js';
+import auth from '../../middleware/auth.js';
+import role from '../../middleware/role.js';
+import { ROLES } from '../../constants/index.js';
 
 // search users api
 router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
@@ -106,4 +106,4 @@ router.put('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

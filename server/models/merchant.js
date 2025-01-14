@@ -1,8 +1,7 @@
-const Mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import { MERCHANT_STATUS } from '../constants/index.js';
 
-const { MERCHANT_STATUS } = require('../constants');
-
-const { Schema } = Mongoose;
+const { Schema } = mongoose;
 
 // Merchant Schema
 const MerchantSchema = new Schema({
@@ -48,4 +47,4 @@ const MerchantSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('Merchant', MerchantSchema);
+export default mongoose.model('Merchant', MerchantSchema);

@@ -1,21 +1,21 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const multer = require('multer');
-const Mongoose = require('mongoose');
+import multer from 'multer';
+import mongoose from 'mongoose';
 
 // Bring in Models & Utils
-const Product = require('../../models/product');
-const Brand = require('../../models/brand');
-const Category = require('../../models/category');
-const auth = require('../../middleware/auth');
-const role = require('../../middleware/role');
-const checkAuth = require('../../utils/auth');
-const { s3Upload } = require('../../utils/storage');
-const {
+import Product from '../../models/product.js';
+import Brand from '../../models/brand.js';
+import Category from '../../models/category.js';
+import auth from '../../middleware/auth.js';
+import role from '../../middleware/role.js';
+import checkAuth from '../../utils/auth.js';
+import { s3Upload } from '../../utils/storage.js';
+import {
   getStoreProductsQuery,
   getStoreProductsWishListQuery
-} = require('../../utils/queries');
-const { ROLES } = require('../../constants');
+} from '../../utils/queries.js';
+import { ROLES } from '../../constants/index.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -425,4 +425,4 @@ router.delete(
   }
 );
 
-module.exports = router;
+export default router;

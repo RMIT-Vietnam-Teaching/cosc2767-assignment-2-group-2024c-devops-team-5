@@ -1,16 +1,16 @@
-exports.ROLES = {
+export const ROLES = {
   Admin: 'ROLE ADMIN',
   Member: 'ROLE MEMBER',
   Merchant: 'ROLE MERCHANT'
 };
 
-exports.MERCHANT_STATUS = {
+export const MERCHANT_STATUS = {
   Rejected: 'Rejected',
   Approved: 'Approved',
   Waiting_Approval: 'Waiting Approval'
 };
 
-exports.CART_ITEM_STATUS = {
+export const CART_ITEM_STATUS = {
   Processing: 'Processing',
   Shipped: 'Shipped',
   Delivered: 'Delivered',
@@ -18,16 +18,17 @@ exports.CART_ITEM_STATUS = {
   Not_processed: 'Not processed'
 };
 
-exports.REVIEW_STATUS = {
+export const REVIEW_STATUS = {
   Rejected: 'Rejected',
   Approved: 'Approved',
   Waiting_Approval: 'Waiting Approval'
 };
 
-exports.EMAIL_PROVIDER = {
+export const EMAIL_PROVIDER = {
   Email: 'Email',
   Google: 'Google',
   Facebook: 'Facebook'
 };
 
-exports.JWT_COOKIE = 'x-jwt-cookie';
+export const JWT_COOKIE = 'x-jwt-cookie';
+

@@ -1,16 +1,16 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 // Bring in Models & Helpers
-const { MERCHANT_STATUS, ROLES } = require('../../constants');
-const Merchant = require('../../models/merchant');
-const User = require('../../models/user');
-const Brand = require('../../models/brand');
-const auth = require('../../middleware/auth');
-const role = require('../../middleware/role');
-const mailgun = require('../../services/mailgun');
+import { MERCHANT_STATUS, ROLES } from '../../constants/index.js';
+import Merchant from '../../models/merchant.js';
+import User from '../../models/user.js';
+import Brand from '../../models/brand.js';
+import auth from '../../middleware/auth.js';
+import role from '../../middleware/role.js';
+import mailgun from '../../services/mailgun.js';
 
 // add merchant api
 router.post('/add', async (req, res) => {
@@ -358,4 +358,4 @@ const createMerchantUser = async (email, name, merchant, host) => {
   }
 };
 
-module.exports = router;
+export default router;

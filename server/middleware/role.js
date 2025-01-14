@@ -19,6 +19,4 @@ const check =
     return next();
   };
 
-// Export the `check` function as part of the `role` object.
-const role = { check };
-module.exports = role;
+export default { check };

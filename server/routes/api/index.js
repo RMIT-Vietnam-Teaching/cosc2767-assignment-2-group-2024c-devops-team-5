@@ -1,19 +1,20 @@
 import express from 'express';
 const router = express.Router();
 
-import authRoutes from './auth';
-import userRoutes from './user';
-import addressRoutes from './address';
-import newsletterRoutes from './newsletter';
-import productRoutes from './product';
-import categoryRoutes from './category';
-import brandRoutes from './brand';
-import contactRoutes from './contact';
-import merchantRoutes from './merchant';
-import cartRoutes from './cart';
-import orderRoutes from './order';
-import reviewRoutes from './review';
-import wishlistRoutes from './wishlist';
+import authRoutes from './auth.js';
+import userRoutes from './user.js';
+import addressRoutes from './address.js';
+import newsletterRoutes from './newsletter.js';
+import productRoutes from './product.js';
+import categoryRoutes from './category.js';
+import brandRoutes from './brand.js';
+import contactRoutes from './contact.js';
+
+import merchantRoutes from './merchant.js';
+import cartRoutes from './cart.js';
+import orderRoutes from './order.js';
+import reviewRoutes from './review.js';
+import wishlistRoutes from './wishlist.js';
 
 // auth routes
 router.use('/auth', authRoutes);

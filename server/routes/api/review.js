@@ -1,11 +1,10 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import Review from '../../models/review.js';
+import Product from '../../models/product.js';
+import auth from '../../middleware/auth.js';
+import { REVIEW_STATUS } from '../../constants/index.js';
 
-// Bring in Models & Helpers
-const Review = require('../../models/review');
-const Product = require('../../models/product');
-const auth = require('../../middleware/auth');
-const { REVIEW_STATUS } = require('../../constants');
+const router = express.Router();
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -184,4 +183,4 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

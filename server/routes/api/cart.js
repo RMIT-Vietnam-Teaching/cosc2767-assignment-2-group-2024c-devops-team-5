@@ -1,11 +1,10 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import { Cart } from '../../models/cart.js';
+import Product from '../../models/product.js';
+import auth from '../../middleware/auth.js';
+import store from '../../utils/store.js';
 
-// Bring in Models & Utils
-const Cart = require('../../models/cart');
-const Product = require('../../models/product');
-const auth = require('../../middleware/auth');
-const store = require('../../utils/store');
+const router = express.Router();
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -83,16 +82,14 @@ router.delete('/delete/:cartId/:productId', auth, async (req, res) => {
 });
 
 const decreaseQuantity = products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity } }
-      }
-    };
-  });
+  let bulkOptions = products.map(item => ({
+    updateOne: {
+      filter: { _id: item.product },
+      update: { $inc: { quantity: -item.quantity } }
+    }
+  }));
 
   Product.bulkWrite(bulkOptions);
 };
 
-module.exports = router;
+export default router;

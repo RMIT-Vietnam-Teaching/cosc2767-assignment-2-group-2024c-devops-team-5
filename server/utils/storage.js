@@ -1,10 +1,7 @@
-const AWS = require('aws-sdk');
+import AWS from 'aws-sdk';
+import keys from '../config/keys.js';
 
-const keys = require('../config/keys');
-
-// This function uploads an image to an AWS S3 bucket.
-// It takes an image object as an argument and returns the image URL and key if the upload is successful.
-exports.s3Upload = async image => {
+const s3Upload = async image => {
   try {
     let imageUrl = '';
     let imageKey = '';
@@ -38,3 +35,5 @@ exports.s3Upload = async image => {
     return { imageUrl: '', imageKey: '' };
   }
 };
+
+export { s3Upload };

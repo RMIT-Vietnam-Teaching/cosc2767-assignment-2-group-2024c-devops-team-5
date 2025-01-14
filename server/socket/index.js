@@ -1,12 +1,12 @@
-const socketio = require('socket.io');
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+import socketio from 'socket.io';
+import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 
-const { ROLES } = require('../constants');
-const keys = require('../config/keys');
-const User = mongoose.model('User');
+import { ROLES } from '../config/constants.js';
+import keys from '../config/keys.js';
+import User from '../models/user.js';
 
-const support = require('./support');
+import support from './support.js';
 
 // Middleware to handle authentication for socket connections
 const authHandler = async (socket, next) => {
