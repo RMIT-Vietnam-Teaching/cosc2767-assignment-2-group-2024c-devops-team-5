@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { CART_ITEM_STATUS } from '../constants/index.js';
 
-const { CART_ITEM_STATUS } = require('../constants');
 const { Schema } = mongoose;
 
 // Cart Item Schema
