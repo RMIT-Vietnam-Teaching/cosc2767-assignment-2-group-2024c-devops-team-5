@@ -50,7 +50,6 @@ class MerchantSignup extends React.PureComponent {
                   error={formErrors['email']}
                   label={'Your Email'}
                   name={'email'}
-                  data-cy="email-input"
                   placeholder={'Enter Your Email Address'}
                   value={signupFormData.email}
                   onInputChange={(name, value) => {
@@ -64,7 +63,6 @@ class MerchantSignup extends React.PureComponent {
                   error={formErrors['firstName']}
                   label={'First Name'}
                   name={'firstName'}
-                  data-cy="first-name-input"
                   placeholder={'Enter Your First Name'}
                   value={signupFormData.firstName}
                   onInputChange={(name, value) => {
@@ -78,7 +76,6 @@ class MerchantSignup extends React.PureComponent {
                   error={formErrors['lastName']}
                   label={'Last Name'}
                   name={'lastName'}
-                  data-cy="last-name-input"
                   placeholder={'Enter Your Last Name'}
                   value={signupFormData.lastName}
                   onInputChange={(name, value) => {
@@ -92,7 +89,6 @@ class MerchantSignup extends React.PureComponent {
                   label={'Create Password'}
                   error={formErrors['password']}
                   name={'password'}
-                  data-cy="password-input"
                   placeholder={'Choose a Password'}
                   value={signupFormData.password}
                   onInputChange={(name, value) => {
@@ -103,10 +99,10 @@ class MerchantSignup extends React.PureComponent {
               <Col xs='12' md='12'>
                 <Button
                   className='mt-3'
+                  name={'submit'}
                   type='submit'
                   variant='primary'
                   text='Get Started'
-                  data-cy="submit-button"
                 />
               </Col>
             </Col>

@@ -31,7 +31,7 @@ Cypress.Commands.add('login', (email, password) => {
         },
       },
     }).as('mockLogin');
-  
+
     // Simulate storing the token in localStorage
     localStorage.setItem('token', 'Bearer mock-token');
   
@@ -46,5 +46,6 @@ Cypress.Commands.add('login', (email, password) => {
         },
       },
     }).as('mockGetUser');
+    
   });
   
