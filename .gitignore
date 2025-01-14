@@ -53,3 +53,7 @@ coverage
 
 # temporary folders
 .tmp
+
+# Cypress screenshots and videos
+client/cypress/videos
+client/cypress/screenshots
