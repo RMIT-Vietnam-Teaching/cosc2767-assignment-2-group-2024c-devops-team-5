@@ -1,18 +1,32 @@
 // Load environment variables from a .env file into process.env
 // Import environment variables from a .env file into process.env
-require('dotenv').config();
+// import('dotenv').then((dotenv) => dotenv.config());
+// require('dotenv').config();
+
+// // Import required modules
+// const express = require('express');
+// const chalk = require('chalk');
+// const cors = require('cors');
+// const helmet = require('helmet');
+
+// // Import custom modules
+// const keys = require('./config/keys');
+// const routes = require('./routes');
+// const socket = require('./socket');
+
+import('dotenv').then((dotenv) => dotenv.config());
 
 // Import required modules
-const express = require('express');
-const chalk = require('chalk');
-const cors = require('cors');
-const helmet = require('helmet');
+import express from 'express';
+import chalk from 'chalk';
+import cors from 'cors';
+import helmet from 'helmet';
 
 // Import custom modules
-const keys = require('./config/keys');
-const routes = require('./routes');
-const socket = require('./socket');
-const setupDB = require('./utils/db');
+import keys from './config/keys.js';
+import routes from './routes/index.js';
+import socket from './socket/index.js';
+import setupDB from './utils/db.js';
 
 
 // Destructure port from keys configuration

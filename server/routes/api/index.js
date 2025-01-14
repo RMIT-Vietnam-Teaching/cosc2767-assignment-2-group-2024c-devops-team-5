@@ -1,18 +1,19 @@
-const router = require('express').Router();
+import express from 'express';
+const router = express.Router();
 
-const authRoutes = require('./auth');
-const userRoutes = require('./user');
-const addressRoutes = require('./address');
-const newsletterRoutes = require('./newsletter');
-const productRoutes = require('./product');
-const categoryRoutes = require('./category');
-const brandRoutes = require('./brand');
-const contactRoutes = require('./contact');
-const merchantRoutes = require('./merchant');
-const cartRoutes = require('./cart');
-const orderRoutes = require('./order');
-const reviewRoutes = require('./review');
-const wishlistRoutes = require('./wishlist');
+import authRoutes from './auth';
+import userRoutes from './user';
+import addressRoutes from './address';
+import newsletterRoutes from './newsletter';
+import productRoutes from './product';
+import categoryRoutes from './category';
+import brandRoutes from './brand';
+import contactRoutes from './contact';
+import merchantRoutes from './merchant';
+import cartRoutes from './cart';
+import orderRoutes from './order';
+import reviewRoutes from './review';
+import wishlistRoutes from './wishlist';
 
 // auth routes
 router.use('/auth', authRoutes);
@@ -53,4 +54,4 @@ router.use('/review', reviewRoutes);
 // Wishlist routes
 router.use('/wishlist', wishlistRoutes);
 
-module.exports = router;
+export default router;

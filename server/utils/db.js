@@ -60,3 +60,5 @@ const setupDB = async () => {
 };
 
 module.exports = setupDB;
+
+export default setupDB;

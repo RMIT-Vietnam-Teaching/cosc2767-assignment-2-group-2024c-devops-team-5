@@ -69,3 +69,5 @@ const socket = server => {
 };
 
 module.exports = socket;
+
+export default socket;
