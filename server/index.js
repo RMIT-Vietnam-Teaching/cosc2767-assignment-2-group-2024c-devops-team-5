@@ -1,5 +1,4 @@
 // Load environment variables from a .env file into process.env
-// Import environment variables from a .env file into process.env
 require('dotenv').config();
 
 // Import required modules
@@ -13,7 +12,6 @@ const keys = require('./config/keys');
 const routes = require('./routes');
 const socket = require('./socket');
 const setupDB = require('./utils/db');
-
 
 // Destructure port from keys configuration
 const { port } = keys;
