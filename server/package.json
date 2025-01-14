@@ -9,7 +9,7 @@
     "seed:db": "node utils/seed.js",
     "test": "npx jest --detectOpenHandles --forceExit"
   },
-  "type": "module",
+
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
