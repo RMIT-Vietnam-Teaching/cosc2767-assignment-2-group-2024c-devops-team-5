@@ -1,0 +1,61 @@
+services:
+  # Frontend service
+  client:
+    container_name: frontend
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+      tags:
+        - "anvugia/cosc2767:front-end"
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Backend service
+  server:
+    container_name: backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      tags:
+        - "anvugia/cosc2767:backend"
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://admin:iZ60gehGkw7Qy48T@mongodb-service:27017
+      - JWT_SECRET=my_secret_string
+      - CLIENT_URL=http://0.0.0.0:80
+      - BASE_API_URL=api
+      - NODE_ENV=production
+    depends_on:
+      - mongodb-service
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # MongoDB service
+  mongodb-service:
+    container_name: db-service
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=iZ60gehGkw7Qy48T
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
