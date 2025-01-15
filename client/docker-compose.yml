@@ -7,6 +7,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      tags: 
+        - "anvugia/cosc2767:front-end"
     ports:
       - "80:80"
     restart: unless-stopped

@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      tags:
+        - anvugia/cosc2767:backend
     ports:
       - "3000:3000"
     environment:

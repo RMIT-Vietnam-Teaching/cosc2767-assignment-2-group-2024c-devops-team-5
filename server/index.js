@@ -11,6 +11,7 @@ const keys = require('./config/keys');
 const routes = require('./routes');
 const socket = require('./socket');
 const setupDB = require('./utils/db');
+const { config } = require('dotenv');
 
 // Destructure port from keys configuration
 const { port } = keys;
@@ -49,7 +50,7 @@ require('./config/passport')(app);
 app.use(routes);
 
 // Start the server and listen on the specified port
-const server = app.listen(port, '0.0.0.0', () => {
+const server = app.listen(port, 'localhost', () => {
   console.log(
     `✓ Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
   );
@@ -58,7 +59,6 @@ const server = app.listen(port, '0.0.0.0', () => {
 // Initialize WebSocket server
 socket(server);
 
-
-
+console.log("day la jwt secret" + config.JWT_SECRET);
 // Export the Express application for testing purposes
 module.exports = app;
