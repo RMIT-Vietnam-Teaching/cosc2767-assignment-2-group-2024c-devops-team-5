@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const { faker } = require('@faker-js/faker');
@@ -25,12 +26,12 @@ const seedDB = async () => {
     let categories = [];
     let usedImageNumbers = new Set(); // Track used image numbers
 
-    console.log('Seed database started');
+    console.log(`${chalk.blue('✓')} ${chalk.blue('Seed database started')}`);
 
     if (!email || !password) throw new Error('Missing arguments');
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      console.log('Seeding admin user...');
+      console.log(`${chalk.yellow('!')} ${chalk.yellow('Seeding admin user...')}`);
       const user = new User({
         email,
         password,
@@ -43,14 +44,14 @@ const seedDB = async () => {
       const hash = await bcrypt.hash(user.password, salt);
       user.password = hash;
       await user.save();
-      console.log('✓ Admin user seeded.');
+      console.log(`${chalk.green('✓')} ${chalk.green('Admin user seeded.')}`);
     } else {
-      console.log('Admin user already exists, skipping seeding for admin user.');
+      console.log(`${chalk.yellow('!')} ${chalk.yellow('Admin user already exists, skipping seeding for admin user.')}`);
     }
 
     const categoriesCount = await Category.countDocuments();
     if (categoriesCount >= NUM_CATEGORIES) {
-      console.log('Sufficient number of categories already exist, skipping seeding for categories.');
+      console.log(`${chalk.yellow('!')} ${chalk.yellow('Sufficient number of categories already exist, skipping seeding for categories.')}`);
       categories = await Category.find().select('_id');
     } else {
       for (let i = 0; i < NUM_CATEGORIES; i++) {
@@ -62,12 +63,12 @@ const seedDB = async () => {
         await category.save();
         categories.push(category);
       }
-      console.log('Categories seeded.');
+      console.log(`${chalk.green('✓')} ${chalk.green('Categories seeded.')}`);
     }
 
     const brandsCount = await Brand.countDocuments();
     if (brandsCount >= NUM_BRANDS) {
-      console.log('Sufficient number of brands already exist, skipping seeding for brands.');
+      console.log(`${chalk.yellow('!')} ${chalk.yellow('Sufficient number of brands already exist, skipping seeding for brands.')}`);
     } else {
       for (let i = 0; i < NUM_BRANDS; i++) {
         const brand = new Brand({
@@ -77,12 +78,12 @@ const seedDB = async () => {
         });
         await brand.save();
       }
-      console.log('Brands seeded.');
+      console.log(`${chalk.green('✓')} ${chalk.green('Brands seeded.')}`);
     }
 
     const productsCount = await Product.countDocuments();
     if (productsCount >= NUM_PRODUCTS) {
-      console.log('Sufficient number of products already exist, skipping seeding for products.');
+      console.log(`${chalk.yellow('!')} ${chalk.yellow('Sufficient number of products already exist, skipping seeding for products.')}`);
     } else {
       const brands = await Brand.find().select('_id');
       for (let i = 0; i < NUM_PRODUCTS; i++) {
@@ -117,15 +118,15 @@ const seedDB = async () => {
         await product.save();
         await Category.updateOne({ _id: categories[randomCategoryIndex]._id }, { $push: { products: product._id } });
       }
-      console.log('Products seeded and associated with categories.');
+      console.log(`${chalk.green('✓')} ${chalk.green('Products seeded and associated with categories.')}`);
     }
   } catch (error) {
-    console.log('Error while seeding database');
+    console.log(`${chalk.red('x')} ${chalk.red('Error while seeding database')}`);
     console.log(error);
     return null;
   } finally {
     await mongoose.connection.close();
-    console.log('Database connection closed!');
+    console.log(`${chalk.blue('✓')} ${chalk.blue('Database connection closed!')}`);
   }
 };
 

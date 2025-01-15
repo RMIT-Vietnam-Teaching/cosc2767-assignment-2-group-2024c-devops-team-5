@@ -2,12 +2,14 @@
   "name": "server",
   "version": "1.0.0",
   "description": "RMIT Ecommerce Server",
+  
   "scripts": {
     "dev": "nodemon",
     "start": "cross-env NODE_ENV=production node index.js",
     "seed:db": "node utils/seed.js",
     "test": "npx jest --detectOpenHandles --forceExit"
   },
+
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
@@ -18,11 +20,11 @@
       "<rootDir>/tests/test-setup.js"
     ],
     "transform": {
-      "^.+\\.js$": "babel-jest"
-    },
-    "transformIgnorePatterns": [
-      "/node_modules/(?!(chalk)/)"
-    ]
+    "^.+\\.js$": "babel-jest"
+  },
+  "transformIgnorePatterns": [
+    "/node_modules/(?!(chalk)/)"
+  ]
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -30,7 +32,6 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "chalk": "^5.4.1",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dompurify": "^2.3.8",
