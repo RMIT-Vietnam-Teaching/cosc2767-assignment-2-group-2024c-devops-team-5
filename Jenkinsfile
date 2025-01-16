@@ -2163,7 +2163,6 @@ pipeline {
 
                 echo "Verifying supertest installation..."
                 npm list supertest || (echo "supertest not installed!" && exit 1)
-                 npm list mongodb-memory-server
                 echo "Installing backend dependencies..."
                 npm install 
                             '''
