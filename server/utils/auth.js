@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-// Function to check authentication from request headers
+// Function to check authentication from request headerssss
 const checkAuth = async req => {
   try {
     // Check if authorization header is present

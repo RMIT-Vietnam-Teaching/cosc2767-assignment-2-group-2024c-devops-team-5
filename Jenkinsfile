@@ -2149,20 +2149,27 @@ pipeline {
                     steps {
                         dir('server') {
                             sh '''
-                              echo "Cleaning existing dependencies..."
+                               echo "Cleaning existing dependencies..."
                 rm -rf node_modules package-lock.json
                 
-
                 echo "Installing mongodb-memory-server (specific version)..."
-                npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
+                npm install mongodb-memory-server --save-dev || (echo "Installation failed!" && exit 1)
 
+                echo "Checking mongodb-memory-server installation path..."
+                npm ls mongodb-memory-server -g
+                npm ls mongodb-memory-server
+                
+                echo "Checking node_modules directory..."
+                ls -la node_modules/mongodb-memory-server
+                
+                echo "Checking package location..."
+                node -e "console.log('MongoDB Memory Server Path:', require.resolve('mongodb-memory-server'))"
+                
+                echo "Checking package.json dependencies..."
+                cat package.json
+                
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 
-                echo "Verifying mongodb-memory-server installationnn..."
-                
-
-                echo "Verifying supertest installation..."
-                npm list supertest || (echo "supertest not installed!" && exit 1)
                 echo "Installing backend dependencies..."
                 npm install 
                             '''
