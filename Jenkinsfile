@@ -2153,19 +2153,25 @@ pipeline {
                 rm -rf node_modules package-lock.json
                 
                 echo "Installing mongodb-memory-server (specific version)..."
-                npm install mongodb-memory-server --save-dev || (echo "Installation failed!" && exit 1)
+                npm install mongodb-memory-server@8.12.2 --save-dev || (echo "Installation failed!" && exit 1)
 
-                echo "Checking mongodb-memory-server installation path..."
-                npm ls mongodb-memory-server -g
-                npm ls mongodb-memory-server
+                echo "Checking installation paths..."
+                echo "1. Global installation:"
+                npm ls mongodb-memory-server -g || true
                 
-                echo "Checking node_modules directory..."
-                ls -la node_modules/mongodb-memory-server
+                echo "2. Local installation:"
+                npm ls mongodb-memory-server || true
                 
-                echo "Checking package location..."
-                node -e "console.log('MongoDB Memory Server Path:', require.resolve('mongodb-memory-server'))"
+                echo "3. Node modules directory content:"
+                ls -la node_modules/mongodb-memory-server || true
                 
-                echo "Checking package.json dependencies..."
+                echo "4. Package resolution path:"
+                node -e "try { console.log(require.resolve('mongodb-memory-server')); } catch(e) { console.log('Error:', e.message); }"
+                
+                echo "5. Full path to binary:"
+                find $(pwd)/node_modules -name mongod || true
+                
+                echo "6. Package.json content:"
                 cat package.json
                 
                 npm install supertest || (echo "Installation failed!" && exit 1)
