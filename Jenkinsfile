@@ -2203,7 +2203,7 @@ pipeline {
                                 node -p "process.arch"
                 
                                 echo "Running tests..."
-                                 NODE_ENV=test MONGOMS_VERSION=10.1.3 npm run test
+                                 NODE_ENV=test npm run test
                             '''
                         }
                     }
