@@ -2097,7 +2097,7 @@ pipeline {
     environment {
         NODE_ENV = 'production'
         MONGODB_URI = credentials('mongodb-uri')
-        DOCKER_REGISTRY = 'tranvuquanganh87'
+        DOCKER_REGISTRY = 'anvugia'
     }
 
     stages {
@@ -2253,70 +2253,97 @@ pipeline {
         // }
 
 
-        stage('Build') {
-    parallel {
-        stage('Build Backend') {
-            when {
-                allOf {
-                    expression { env.BACKEND_CHANGED == 'true' }
-                    expression { fileExists('server/Dockerfile') }
-                }
-            }
-            steps {
-                dir('server') {
-                    script {
-                        try {
-                            // Check Docker status
-                            def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                            if (dockerStatus == 0) {
-                                sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
-                            } else {
-                                echo "Docker is not available. Skipping docker build."
-                                // Don't fail the build
-                                currentBuild.result = 'SUCCESS'
-                            }
-                        } catch (Exception e) {
-                            echo "Warning: Docker build failed: ${e.getMessage()}"
-                            // Don't fail the build
-                            currentBuild.result = 'SUCCESS'
-                        }
-                    }
-                }
-            }
-        }
-        stage('Build Frontend') {
-            when {
-                allOf {
-                    expression { env.FRONTEND_CHANGED == 'true' }
-                    expression { fileExists('client/Dockerfile') }
-                }
-            }
-            steps {
-                dir('client') {
-                    script {
-                        try {
-                            sh 'npm run build'
+        // stage('Docker Setup') {
+        //     steps {
+        //         script {
+        //             withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        //                 try {
+        //                     sh '''
+        //                         # Check and start Docker if needed
+        //                         if ! docker info > /dev/null 2>&1; then
+        //                             echo "Starting Docker daemon..."
+        //                             sudo service docker start
+        //                             sleep 10
+        //                         fi
+                                
+        //                         # Login to Docker Hub
+        //                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin || true
+        //                     '''
+        //                 } catch (Exception e) {
+        //                     echo "Docker setup warning: ${e.getMessage()}"
+        //                     // Don't fail the build
+        //                     currentBuild.result = 'SUCCESS'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+
+//         stage('Build') {
+//         parallel {
+//             stage('Build Backend') {
+//                 when {
+//                     allOf {
+//                         expression { env.BACKEND_CHANGED == 'true' }
+//                         expression { fileExists('server/Dockerfile') }
+//                     }
+//                 }
+//             steps {
+//                 dir('server') {
+//                     script {
+//                         try {
+//                             // Check Docker status
+//                             def dockerStatus = sh(script: 'docker info', returnStatus: true)
+//                             if (dockerStatus == 0) {
+//                                 sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
+//                             } else {
+//                                 echo "Docker is not available. Skipping docker build."
+//                                 // Don't fail the build
+//                                 currentBuild.result = 'SUCCESS'
+//                             }
+//                         } catch (Exception e) {
+//                             echo "Warning: Docker build failed: ${e.getMessage()}"
+//                             // Don't fail the build
+//                             currentBuild.result = 'SUCCESS'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//             stage('Build Frontend') {
+//                 when {
+//                     allOf {
+//                         expression { env.FRONTEND_CHANGED == 'true' }
+//                         expression { fileExists('client/Dockerfile') }
+//                     }
+//                 }
+//             steps {
+//                 dir('client') {
+//                     script {
+//                         try {
+//                             sh 'npm run build'
                             
-                            // Check Docker status
-                            def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                            if (dockerStatus == 0) {
-                                sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
-                            } else {
-                                echo "Docker is not available. Skipping docker build."
-                                // Don't fail the build
-                                currentBuild.result = 'SUCCESS'
-                            }
-                        } catch (Exception e) {
-                            echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
-                            // Don't fail the build
-                            currentBuild.result = 'SUCCESS'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//                             // Check Docker status
+//                             def dockerStatus = sh(script: 'docker info', returnStatus: true)
+//                             if (dockerStatus == 0) {
+//                                 sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
+//                             } else {
+//                                 echo "Docker is not available. Skipping docker build."
+//                                 // Don't fail the build
+//                                 currentBuild.result = 'SUCCESS'
+//                             }
+//                         } catch (Exception e) {
+//                             echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
+//                             // Don't fail the build
+//                             currentBuild.result = 'SUCCESS'
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
     }
 
     post {
