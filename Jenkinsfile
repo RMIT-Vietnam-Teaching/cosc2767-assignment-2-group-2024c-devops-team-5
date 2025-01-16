@@ -2157,6 +2157,7 @@ pipeline {
 
                 echo "Installing mongodb-memory-server (specific version)..."
                 npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
+                npm install mongodb-memory-server --save-dev || (echo "Installation failed!" && exit 1)
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 
                 echo "Verifying mongodb-memory-server installation..."
@@ -2195,8 +2196,14 @@ pipeline {
                     steps {
                         dir('server') {
                             sh '''
-                                echo "Running backend tests..."
-                                NODE_ENV=test npm run test
+                               echo "System Architecture:"
+                                uname -m
+                
+                                echo "Node Architecture:"
+                                node -p "process.arch"
+                
+                                echo "Running tests..."
+                                 NODE_ENV=test MONGOMS_VERSION=10.1.3 npm run test
                             '''
                         }
                     }

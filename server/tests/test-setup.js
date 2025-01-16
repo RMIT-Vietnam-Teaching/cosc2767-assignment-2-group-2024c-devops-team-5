@@ -6,10 +6,6 @@ let mongoServer;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create({
-    binary: {
-      version: '8.0.3', // Version of MongoDB
-      downloadUrl: 'mongodb-linux-aarch64-amazon2023-8.0.3.tgz'
-    },
     instance: {
 
       port: 27017, // Use a specific port
