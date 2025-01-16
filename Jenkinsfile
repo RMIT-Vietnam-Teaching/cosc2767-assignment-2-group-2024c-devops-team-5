@@ -2156,7 +2156,6 @@ pipeline {
                 npm install 
 
                 echo "Installing mongodb-memory-server (specific version)..."
-                npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
                 npm install mongodb-memory-server --save-dev || (echo "Installation failed!" && exit 1)
                 npm install supertest || (echo "Installation failed!" && exit 1)
                 
