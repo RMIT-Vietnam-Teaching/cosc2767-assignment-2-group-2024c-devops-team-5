@@ -2152,8 +2152,6 @@ pipeline {
                               echo "Cleaning existing dependencies..."
                 rm -rf node_modules package-lock.json
                 
-                echo "Installing backend dependencies..."
-                npm install 
 
                 echo "Installing mongodb-memory-server (specific version)..."
                  npm install mongodb-memory-server@10.1.3 || (echo "Installation failed!" && exit 1)
@@ -2165,7 +2163,8 @@ pipeline {
                 echo "Verifying supertest installation..."
                 npm list supertest || (echo "supertest not installed!" && exit 1)
                  npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
-            
+                echo "Installing backend dependencies..."
+                npm install 
                             '''
                         }
                     }
