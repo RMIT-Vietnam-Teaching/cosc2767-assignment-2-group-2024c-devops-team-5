@@ -10,7 +10,7 @@ beforeAll(async () => {
       port: 27017, // Use a specific port
     },
   });
-  // const uri = mongoServer.getUri();
+  // const uri = mongoServer.getUri()
 
   mongoose.set('strictQuery', false); 
    await mongoose.connect(process.env.MONGO_URI, {
