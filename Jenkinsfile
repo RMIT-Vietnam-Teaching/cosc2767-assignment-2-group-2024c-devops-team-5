@@ -2156,10 +2156,7 @@ pipeline {
                 npm install
                 
                 echo "Installing test dependencies explicitly..."
-                npm install --save-dev mongodb-memory-server
-                npm install --save-dev @shelf/jest-mongodb
                 npm install --save-dev jest
-                npm install --save-dev mongoose
                 npm install --save-dev supertest
                             '''
                         }
