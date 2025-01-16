@@ -2150,20 +2150,25 @@ pipeline {
                         dir('server') {
                             sh '''
                               echo "Cleaning existing dependencies..."
-                echo "Cleaning existing dependencies..."
                 rm -rf node_modules package-lock.json
                 
                 echo "Installing backend dependencies..."
-                npm install
+                npm install 
+
+                echo "Installing mongodb-memory-server (specific version)..."
+                npm install mongoose || (echo "Installation failed!" && exit 1)
+                npm install mongodb-memory-server 
+                npm instal mongodb-memory-server --save-dev
+                npm install @shelf/jest-mongodb
+                npm install @shelf/jest-mongodb --save-dev
+                npm install supertest || (echo "Installation failed!" && exit 1)
                 
-                echo "Installing test dependencies..."
-                npm install --save-dev mongodb-memory-server@9.1.6
-                npm install --save-dev @shelf/jest-mongodb
-                npm install --save-dev supertest
+                echo "Verifying mongodb-memory-server installation..."
                 
-                echo "Verifying installations..."
-                npm list mongodb-memory-server
-                npm list supertest
+
+                echo "Verifying supertest installation..."
+                npm list supertest || (echo "supertest not installed!" && exit 1)
+                 npm list mongodb-memory-server || (echo "supertest not installed!" && exit 1)
             
                             '''
                         }
