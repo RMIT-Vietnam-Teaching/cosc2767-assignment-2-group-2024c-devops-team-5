@@ -2162,8 +2162,7 @@ pipeline {
                 npm install --save-dev mongoose
                 npm install --save-dev supertest
                 
-                echo "Verifying installation..."
-                ls -la node_modules/mongodb-memory-server*
+           
                             '''
                         }
                     }
