@@ -2149,35 +2149,35 @@ pipeline {
                     steps {
                         dir('server') {
                             sh '''
-                               echo "Cleaning existing dependencies..."
+                              echo "Cleaning existing dependencies..."
                 rm -rf node_modules package-lock.json
                 
-                echo "Installing mongodb-memory-server (specific version)..."
-                npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
-
-                echo "Checking installation paths..."
-                echo "1. Global installation:"
-                npm ls mongodb-memory-server -g || true
+                echo "Installing all dependencies first..."
+                npm install
                 
-                echo "2. Local installation:"
-                npm ls mongodb-memory-server || true
+                echo "Installing test dependencies explicitly..."
+                npm install --save-dev mongodb-memory-server
+                npm install --save-dev @shelf/jest-mongodb
+                npm install --save-dev jest
+                npm install --save-dev mongoose
+                npm install --save-dev supertest
                 
-                echo "3. Node modules directory content:"
-                ls -la node_modules/mongodb-memory-server || true
+                echo "Verifying installation..."
+                ls -la node_modules/mongodb-memory-server*
                 
-                echo "4. Package resolution path:"
-                node -e "try { console.log(require.resolve('mongodb-memory-server')); } catch(e) { console.log('Error:', e.message); }"
+                echo "Checking module resolution..."
+                node -e "
+                    try {
+                        const { MongoMemoryServer } = require('mongodb-memory-server');
+                        console.log('Successfully loaded mongodb-memory-server');
+                    } catch (e) {
+                        console.error('Error loading module:', e);
+                        process.exit(1);
+                    }
+                "
                 
-                echo "5. Full path to binary:"
-                find $(pwd)/node_modules -name mongod || true
-                
-                echo "6. Package.json content:"
-                cat package.json
-                
-                npm install supertest || (echo "Installation failed!" && exit 1)
-                
-                echo "Installing backend dependencies..."
-                npm install 
+                echo "Checking binary installation..."
+                ls -la node_modules/.bin/mongod* || true
                             '''
                         }
                     }

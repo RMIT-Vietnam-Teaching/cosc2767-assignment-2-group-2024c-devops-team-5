@@ -1,6 +1,6 @@
 # docker-compose.yml
 
-#docker compose fileeeeeeeeeeeee=
+#docker compose fileeeeeeeeeeeeeeeeee
 version: '3.8'
 services:
   nodejs-backend:    # Backend service
