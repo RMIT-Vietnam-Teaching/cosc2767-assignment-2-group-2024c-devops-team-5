@@ -33,7 +33,6 @@
 
 
 require('dotenv').config();
-const chalk = require('chalk');
 const mongoose = require('mongoose');
 
 const keys = require('../config/keys');
@@ -49,7 +48,7 @@ const setupDB = async () => {
         // remove useFindAndModify if present, as it is not needed in Mongoose v6
       })
       .then(() => {
-        console.log(`${chalk.green('✓')} ${chalk.blue('MongoDB Connected!')}`);
+        console.log('MongoDB Connected!');
       })
       .catch((err) => {
         console.log(err);
