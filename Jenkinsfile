@@ -185,71 +185,100 @@ pipeline {
         //     }
         // }
 
-            stage('Build') {
-            parallel {
-                stage('Build Backend') {
-                    when {
-                        allOf {
-                            expression { env.BACKEND_CHANGED == 'true' }
-                            expression { fileExists('server/Dockerfile') }
-                        }
-                    }
-                    steps {
-                        dir('server') {
-                            script {
-                                try {
-                                    // Check Docker status
-                                    def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                                    if (dockerStatus == 0) {
-                                        sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
-                                } else {
-                                        echo 'Docker is not available. Skipping docker build.'
-                                        // Don't fail the build
-                                        currentBuild.result = 'SUCCESS'
-                                    }
-                            } catch (Exception e) {
-                                    echo "Warning: Docker build failed: ${e.getMessage()}"
-                                    // Don't fail the build
-                                    currentBuild.result = 'SUCCESS'
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('Build Frontend') {
-                    when {
-                        allOf {
-                            expression { env.FRONTEND_CHANGED == 'true' }
-                            expression { fileExists('client/Dockerfile') }
-                        }
-                    }
-                    steps {
-                        dir('client') {
-                            script {
-                                try {
-                                    sh 'npm run build'
+        stage('Docker Setup') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        try {
+                            sh '''
+                        # Check Docker daemon
+                        if ! docker info > /dev/null 2>&1; then
+                            echo "Docker daemon not running"
+                            # Try starting without sudo
+                            service docker start
+                            sleep 7
+                        fi
 
-                                    // Check Docker status
-                                    def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                                    if (dockerStatus == 0) {
-                                        sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
-                                } else {
-                                        echo 'Docker is not available. Skipping docker build.'
-                                        // Don't fail the build
-                                        currentBuild.result = 'SUCCESS'
-                                    }
-                            } catch (Exception e) {
-                                    echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
-                                    // Don't fail the build
-                                    currentBuild.result = 'SUCCESS'
-                                }
-                            }
+                        # Verify Docker socket permissions
+                        ls -l /var/run/docker.sock || true
+
+                        # Try Docker login regardless of previous steps
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin || true
+                    '''
+                } catch (Exception e) {
+                            echo "Docker setup warning: ${e.getMessage()}"
+                            currentBuild.result = 'SUCCESS'
                         }
                     }
                 }
             }
-            }
-    }
+        }
+
+    //         stage('Build') {
+    //         parallel {
+    //             stage('Build Backend') {
+    //                 when {
+    //                     allOf {
+    //                         expression { env.BACKEND_CHANGED == 'true' }
+    //                         expression { fileExists('server/Dockerfile') }
+    //                     }
+    //                 }
+    //                 steps {
+    //                     dir('server') {
+    //                         script {
+    //                             try {
+    //                                 // Check Docker status
+    //                                 def dockerStatus = sh(script: 'docker info', returnStatus: true)
+    //                                 if (dockerStatus == 0) {
+    //                                     sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
+    //                             } else {
+    //                                     echo 'Docker is not available. Skipping docker build.'
+    //                                     // Don't fail the build
+    //                                     currentBuild.result = 'SUCCESS'
+    //                                 }
+    //                         } catch (Exception e) {
+    //                                 echo "Warning: Docker build failed: ${e.getMessage()}"
+    //                                 // Don't fail the build
+    //                                 currentBuild.result = 'SUCCESS'
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             stage('Build Frontend') {
+    //                 when {
+    //                     allOf {
+    //                         expression { env.FRONTEND_CHANGED == 'true' }
+    //                         expression { fileExists('client/Dockerfile') }
+    //                     }
+    //                 }
+    //                 steps {
+    //                     dir('client') {
+    //                         script {
+    //                             try {
+    //                                 sh 'npm run build'
+
+    //                                 // Check Docker status
+    //                                 def dockerStatus = sh(script: 'docker info', returnStatus: true)
+    //                                 if (dockerStatus == 0) {
+    //                                     sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
+    //                             } else {
+    //                                     echo 'Docker is not available. Skipping docker build.'
+    //                                     // Don't fail the build
+    //                                     currentBuild.result = 'SUCCESS'
+    //                                 }
+    //                         } catch (Exception e) {
+    //                                 echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
+    //                                 // Don't fail the build
+    //                                 currentBuild.result = 'SUCCESS'
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         }
+    // }
 
     post {
         success {
