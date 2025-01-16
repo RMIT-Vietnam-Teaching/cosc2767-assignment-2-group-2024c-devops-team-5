@@ -2149,35 +2149,57 @@ pipeline {
                     steps {
                         dir('server') {
                             sh '''
-                              echo "Cleaning existing dependencies..."
+                             echo "Cleaning existing dependencies..."
                 rm -rf node_modules package-lock.json
                 
-                echo "Installing all dependencies first..."
+                echo "Creating package.json backup..."
+                cp package.json package.json.backup || true
+                
+                echo "Updating package.json..."
+                node -e '
+                    const fs = require("fs");
+                    const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+                    pkg.devDependencies = {
+                        ...(pkg.devDependencies || {}),
+                        "@shelf/jest-mongodb": "^4.3.2",
+                        "jest": "^29.7.0",
+                        "mongodb-memory-server-core": "^8.12.2",
+                        "supertest": "^6.3.3",
+                        "mongoose": "^6.13.5"
+                    };
+                    pkg.scripts = {
+                        ...(pkg.scripts || {}),
+                        "test": "jest --detectOpenHandles --forceExit"
+                    };
+                    pkg.jest = {
+                        "testEnvironment": "node",
+                        "testTimeout": 30000,
+                        "verbose": true,
+                        "setupFilesAfterEnv": ["./tests/test-setup.js"]
+                    };
+                    fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+                '
+                
+                echo "Installing dependencies..."
+                export NODE_ENV=development
                 npm install
                 
-                echo "Installing test dependencies explicitly..."
-                npm install --save-dev mongodb-memory-server-core
-                npm install --save-dev @shelf/jest-mongodb
-                npm install --save-dev jest
-                npm install --save-dev mongoose
-                npm install --save-dev supertest
+                echo "Verifying installations..."
+                echo "1. Package versions:"
+                npm list mongodb-memory-server-core || true
+                npm list @shelf/jest-mongodb || true
+                npm list mongoose || true
                 
-                echo "Verifying installation..."
-                ls -la node_modules/mongodb-memory-server*
-                
-                echo "Checking module resolution..."
+                echo "2. Module resolution test:"
                 node -e "
                     try {
-                        const { MongoMemoryServer } = require('mongodb-memory-server');
-                        console.log('Successfully loaded mongodb-memory-server');
+                        const { MongoMemoryServer } = require('mongodb-memory-server-core');
+                        console.log('Successfully loaded mongodb-memory-server-core');
                     } catch (e) {
                         console.error('Error loading module:', e);
                         process.exit(1);
                     }
                 "
-                
-                echo "Checking binary installation..."
-                ls -la node_modules/.bin/mongod* || true
                             '''
                         }
                     }
