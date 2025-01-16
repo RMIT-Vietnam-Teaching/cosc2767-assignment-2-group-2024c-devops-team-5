@@ -191,19 +191,26 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         try {
                             sh '''
-                        # Check Docker daemon
-                        if ! docker info > /dev/null 2>&1; then
-                            echo "Docker daemon not running"
-                            # Try starting without sudo
-                            service docker start || true
-                            sleep 5
+                        # Check Docker socket exists
+                        if [ ! -S /var/run/docker.sock ]; then
+                            echo "Docker socket not found"
+                            exit 0
                         fi
 
-                        # Verify Docker socket permissions
-                        ls -l /var/run/docker.sock || true
+                        # Set permissions for Docker socket
+                        chmod 666 /var/run/docker.sock || true
 
-                        # Try Docker login regardless of previous steps
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin || true
+                        # Check Docker daemon
+                        docker info > /dev/null 2>&1 || {
+                            echo "Docker daemon not running"
+                            # You might need to mount the Docker daemon from host
+                            echo "Please make sure Docker is properly mounted"
+                        }
+
+                        # Try Docker login
+                        docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" || {
+                            echo "Docker login failed"
+                        }
                     '''
                 } catch (Exception e) {
                             echo "Docker setup warning: ${e.getMessage()}"
