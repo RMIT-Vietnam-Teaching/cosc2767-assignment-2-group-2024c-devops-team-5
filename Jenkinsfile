@@ -2153,7 +2153,7 @@ pipeline {
                 rm -rf node_modules package-lock.json
                 
                 echo "Installing mongodb-memory-server (specific version)..."
-                npm install mongodb-memory-server@8.12.2 --save-dev || (echo "Installation failed!" && exit 1)
+                npm install mongodb-memory-server || (echo "Installation failed!" && exit 1)
 
                 echo "Checking installation paths..."
                 echo "1. Global installation:"
