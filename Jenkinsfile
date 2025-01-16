@@ -166,17 +166,19 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        try {
-                            // Use the configured Docker tool
-                            docker.withTool('Docker') {
-                                sh """
-                            docker info || true
-                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin || true
-                        """
+                        docker.withTool('Docker') {
+                            try {
+                                sh '''
+                            # Check Docker status
+                            docker info > /dev/null 2>&1 || echo "Docker daemon not running"
+
+                            # Docker login without --password-stdin for older Docker versions
+                            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" || echo "Docker login failed"
+                        '''
+                    } catch (Exception e) {
+                                echo "Docker setup warning: ${e.getMessage()}"
+                                currentBuild.result = 'SUCCESS'
                             }
-                } catch (Exception e) {
-                            echo "Docker setup warning: ${e.getMessage()}"
-                            currentBuild.result = 'SUCCESS'
                         }
                     }
                 }
