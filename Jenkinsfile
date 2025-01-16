@@ -2156,7 +2156,7 @@ pipeline {
                 npm install 
 
                 echo "Installing mongodb-memory-server (specific version)..."
-                npm instal mongodb-memory-server
+                npm instal --save-dev mongodb-memory-server
                 npm install @shelf/jest-mongodb
                 npm install @shelf/jest-mongodb --save-dev
                 npm install supertest || (echo "Installation failed!" && exit 1)
@@ -2166,7 +2166,7 @@ pipeline {
 
                 echo "Verifying supertest installation..."
                 npm list supertest || (echo "supertest not installed!" && exit 1)
-                 npm list mongodb-memory-server || (echo "supertest not installed!" && exit 1)
+                 npm list mongodb-memory-server || (echo "mongodb-memory-server not installed!" && exit 1)
             
                             '''
                         }
