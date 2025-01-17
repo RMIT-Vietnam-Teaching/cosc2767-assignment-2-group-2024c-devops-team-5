@@ -227,8 +227,6 @@ pipeline {
                         dir('client') {
                             script {
                                 try {
-                                    sh 'npm run build'
-
                                     // Check Docker status
                                     def dockerStatus = sh(script: 'docker info', returnStatus: true)
                                     if (dockerStatus == 0) {
