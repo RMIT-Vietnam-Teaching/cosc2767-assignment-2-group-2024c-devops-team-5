@@ -7,7 +7,7 @@
     "build": "npm run clean && cross-env NODE_ENV=production webpack --mode production --config webpack/webpack.prod.js",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --config webpack/webpack.dev.js",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run --headless"
   },
   "dependencies": {
     "@fontsource/poppins": "^4.5.9",
