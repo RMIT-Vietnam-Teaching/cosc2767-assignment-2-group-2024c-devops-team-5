@@ -89,8 +89,8 @@ pipeline {
                 rm -rf node_modules package-lock.json
                 npm install
                 npm install -g cypress
-                npx cypress verify
-                npx cypress install
+                npm install --save-dev cypress
+                
                             '''
                         }
                     }
