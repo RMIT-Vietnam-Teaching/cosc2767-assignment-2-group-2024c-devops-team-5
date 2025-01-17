@@ -55,17 +55,23 @@ pipeline {
 
 
         stage('Root Dependencies') {
-            steps {
-                dir('COSC2767-RMIT-Store-main') {
-                    sh '''
-                    echo "Installing root level dependencies..."
-                    rm -rf node_modules package-lock.json
-                    npm install
-                    npm install --save-dev cypress
-                '''
-                }
-            }
+    steps {
+        dir('COSC2767-RMIT-Store-main') {
+            sh '''
+                echo "Installing root level dependencies..."
+                rm -rf node_modules package-lock.json
+                
+                # Install npm-run-all globally first
+                npm install -g npm-run-all
+                
+                # Install dependencies
+                npm install
+                npm install --save-dev cypress
+                npm install --save-dev npm-run-all
+            '''
         }
+    }
+}
 
         stage('Install Dependencies') {
             parallel {

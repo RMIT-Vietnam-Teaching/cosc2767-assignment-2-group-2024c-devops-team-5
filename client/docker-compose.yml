@@ -1,6 +1,6 @@
 
 # docker compose for clienttttttttttttt
-# check CI
+# check CIttt
 version: '3.8'
 services:
   cosc2767-fe:
