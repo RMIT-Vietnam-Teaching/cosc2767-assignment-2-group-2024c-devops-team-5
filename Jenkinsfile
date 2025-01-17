@@ -82,11 +82,15 @@ pipeline {
                     steps {
                         dir('client') {
                             sh '''
-                                echo "Installing frontend dependencies..."
-                                rm -rf node_modules package-lock.json
-                                npm install
-                                npm install -g cypress
-                                npx cypress install
+                              echo "Installing system dependencies..."
+                              apt-get update && apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6
+
+                              echo "Installing frontend dependencies..."
+                rm -rf node_modules package-lock.json
+                npm install
+                npm install -g cypress
+                npx cypress verify
+                npx cypress install
                             '''
                         }
                     }
