@@ -53,93 +53,46 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     parallel {
-        //         stage('Backend Dependencies') {
-        //             when {
-        //                 expression { env.BACKEND_CHANGED == 'true' }
-        //             }
-        //             steps {
-        //                 dir('server') {
-        //                     sh '''
-        //                       echo "Cleaning existing dependencies..."
-        //         rm -rf node_modules package-lock.json
-
-        //         echo "Installing all dependencies first..."
-        //         npm install
-
-        //         echo "Installing test dependencies explicitly..."
-        //         npm install --save-dev jest
-        //         npm install --save-dev supertest
-        //                     '''
-        //                 }
-        //             }
-        //         }
-        //         stage('Frontend Dependencies') {
-        //             when {
-        //                 expression { env.FRONTEND_CHANGED == 'true' }
-        //             }
-        //             steps {
-        //                 dir('client') {
-        //                     sh '''
-        //                         echo "Installing frontend dependencies..."
-        //                         rm -rf node_modules package-lock.json
-        //                         npm install
-        //                     '''
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
         stage('Install Dependencies') {
-    parallel {
-        stage('Root Dependencies') {
-            steps {
-                sh '''
-                    echo "Installing root level dependencies..."
-                    rm -rf node_modules package-lock.json
-                    npm install
-                    npm install --save-dev cypress
-                '''
-            }
-        }
-        stage('Backend Dependencies') {
-            when {
-                expression { env.BACKEND_CHANGED == 'true' }
-            }
-            steps {
-                dir('server') {
-                    sh '''
-                        echo "Cleaning existing dependencies..."
-                        rm -rf node_modules package-lock.json
+            parallel {
+                stage('Backend Dependencies') {
+                    when {
+                        expression { env.BACKEND_CHANGED == 'true' }
+                    }
+                    steps {
+                        dir('server') {
+                            sh '''
+                              echo "Cleaning existing dependencies..."
+                rm -rf node_modules package-lock.json
 
-                        echo "Installing all dependencies first..."
-                        npm install
+                echo "Installing all dependencies first..."
+                npm install
 
-                        echo "Installing test dependencies explicitly..."
-                        npm install --save-dev jest
-                        npm install --save-dev supertest
-                    '''
+                echo "Installing test dependencies explicitly..."
+                npm install --save-dev jest
+                npm install --save-dev supertest
+                            '''
+                        }
+                    }
+                }
+                stage('Frontend Dependencies') {
+                    when {
+                        expression { env.FRONTEND_CHANGED == 'true' }
+                    }
+                    steps {
+                        dir('client') {
+                            sh '''
+                                echo "Installing frontend dependencies..."
+                                rm -rf node_modules package-lock.json
+                                npm install
+
+                                npm install --save-dev cypress
+                            '''
+                        }
+                    }
                 }
             }
         }
-        stage('Frontend Dependencies') {
-            when {
-                expression { env.FRONTEND_CHANGED == 'true' }
-            }
-            steps {
-                dir('client') {
-                    sh '''
-                        echo "Installing frontend dependencies..."
-                        rm -rf node_modules package-lock.json
-                        npm install
-                    '''
-                }
-            }
-        }
-    }
-}
 
         stage('Run Tests') {
             parallel {
