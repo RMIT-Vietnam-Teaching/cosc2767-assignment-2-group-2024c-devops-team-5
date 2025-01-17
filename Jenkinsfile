@@ -126,65 +126,6 @@ pipeline {
             }
         }
 
-        // stage('Build') {
-        //     parallel {
-        //         stage('Build Backend') {
-        //             when {
-        //                 allOf {
-        //                     expression { env.BACKEND_CHANGED == 'true' }
-        //                     expression { fileExists('server/Dockerfile') }
-        //                 }
-        //             }
-        //             steps {
-        //                 dir('server') {
-        //                     script {
-        //                         sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         stage('Build Frontend') {
-        //             when {
-        //                 allOf {
-        //                     expression { env.FRONTEND_CHANGED == 'true' }
-        //                     expression { fileExists('client/Dockerfile') }
-        //                 }
-        //             }
-        //             steps {
-        //                 dir('client') {
-        //                     sh 'npm run build'
-        //                     script {
-        //                         sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-        // stage('Docker Setup') {
-        //     steps {
-        //         script {
-        //             withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-        //                 docker.withTool('Docker') {
-        //                     try {
-        //                         sh '''
-        //                     # Check Docker status
-        //                     docker info > /dev/null 2>&1 || echo "Docker daemon not running"
-
-        //                     # Docker login without --password-stdin for older Docker versions
-        //                     docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" || echo "Docker login failed"
-        //                 '''
-        //             } catch (Exception e) {
-        //                         echo "Docker setup warning: ${e.getMessage()}"
-        //                         currentBuild.result = 'SUCCESS'
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
         stage('Docker Setup') {
             steps {
                 script {
@@ -230,28 +171,28 @@ pipeline {
                             expression { fileExists('server/Dockerfile') }
                         }
                     }
-                steps {
-                    dir('server') {
-                        script {
-                            try {
-                                // Check Docker status
-                                def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                                if (dockerStatus == 0) {
-                                    sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
+                    steps {
+                        dir('server') {
+                            script {
+                                try {
+                                    // Check Docker status
+                                    def dockerStatus = sh(script: 'docker info', returnStatus: true)
+                                    if (dockerStatus == 0) {
+                                        sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
                                 } else {
-                                    echo "Docker is not available. Skipping docker build."
+                                        echo 'Docker is not available. Skipping docker build.'
+                                        // Don't fail the build
+                                        currentBuild.result = 'SUCCESS'
+                                    }
+                            } catch (Exception e) {
+                                    echo "Warning: Docker build failed: ${e.getMessage()}"
                                     // Don't fail the build
                                     currentBuild.result = 'SUCCESS'
                                 }
-                            } catch (Exception e) {
-                                echo "Warning: Docker build failed: ${e.getMessage()}"
-                                // Don't fail the build
-                                currentBuild.result = 'SUCCESS'
                             }
                         }
                     }
                 }
-            }
                 stage('Build Frontend') {
                     when {
                         allOf {
@@ -259,32 +200,58 @@ pipeline {
                             expression { fileExists('client/Dockerfile') }
                         }
                     }
-                steps {
-                    dir('client') {
-                        script {
-                            try {
-                                sh 'npm run build'
+                    steps {
+                        dir('client') {
+                            script {
+                                try {
+                                    sh 'npm run build'
 
-                                // Check Docker status
-                                def dockerStatus = sh(script: 'docker info', returnStatus: true)
-                                if (dockerStatus == 0) {
-                                    sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
+                                    // Check Docker status
+                                    def dockerStatus = sh(script: 'docker info', returnStatus: true)
+                                    if (dockerStatus == 0) {
+                                        sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
                                 } else {
-                                    echo "Docker is not available. Skipping docker build."
+                                        echo 'Docker is not available. Skipping docker build.'
+                                        // Don't fail the build
+                                        currentBuild.result = 'SUCCESS'
+                                    }
+                            } catch (Exception e) {
+                                    echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
                                     // Don't fail the build
                                     currentBuild.result = 'SUCCESS'
                                 }
-                            } catch (Exception e) {
-                                echo "Warning: Build or Docker operation failed: ${e.getMessage()}"
-                                // Don't fail the build
-                                currentBuild.result = 'SUCCESS'
                             }
                         }
                     }
                 }
             }
+            }
+
+        stage('Push to DockerHub') {
+            when {
+                anyOf {
+                    expression { env.BACKEND_CHANGED == 'true' }
+                    expression { env.FRONTEND_CHANGED == 'true' }
+                }
+            }
+            steps {
+                script {
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            if (env.BACKEND_CHANGED == 'true') {
+                                sh "docker push ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER}"
+                            }
+                            if (env.FRONTEND_CHANGED == 'true') {
+                                sh "docker push ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}"
+                            }
+                        }
+            } catch (Exception e) {
+                        echo "Warning: Docker push failed: ${e.getMessage()}"
+                        currentBuild.result = 'SUCCESS'
+                    }
+                }
+            }
         }
-    }
     }
 
     post {
