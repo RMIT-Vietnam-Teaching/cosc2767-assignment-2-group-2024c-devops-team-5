@@ -201,7 +201,7 @@ pipeline {
                                     // Check Docker status
                                     def dockerStatus = sh(script: 'docker info', returnStatus: true)
                                     if (dockerStatus == 0) {
-                                        sh "docker build -t ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} ."
+                                        sh "docker build -t ${env.DOCKER_REGISTRY}/cosc2767:backend ."
                                 } else {
                                         echo 'Docker is not available. Skipping docker build.'
                                         // Don't fail the build
@@ -230,7 +230,7 @@ pipeline {
                                     // Check Docker status
                                     def dockerStatus = sh(script: 'docker info', returnStatus: true)
                                     if (dockerStatus == 0) {
-                                        sh "docker build -t ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} ."
+                                        sh "docker build -t ${env.DOCKER_REGISTRY}/cosc2767:frontend ."
                                 } else {
                                         echo 'Docker is not available. Skipping docker build.'
                                         // Don't fail the build
@@ -260,10 +260,10 @@ pipeline {
                     try {
                         withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             if (env.BACKEND_CHANGED == 'true') {
-                                sh "docker push ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER}"
+                                sh "docker push ${env.DOCKER_REGISTRY}/cosc2767:backend"
                             }
                             if (env.FRONTEND_CHANGED == 'true') {
-                                sh "docker push ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER}"
+                                sh "docker push ${env.DOCKER_REGISTRY}/cosc2767:frontend"
                             }
                         }
             } catch (Exception e) {
@@ -282,17 +282,17 @@ pipeline {
         failure {
             echo 'Pipeline failed! Check the logs above for detailed error information.'
         }
-        always {
-            script {
-                try {
-                    sh """
-                        docker rmi ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
-                        docker rmi ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
-                    """
-                } catch (Exception e) {
-                    echo "Warning: Failed to cleanup Docker images: ${e.getMessage()}"
-                }
-            }
-        }
+        // always {
+        //     script {
+        //         try {
+        //             sh """
+        //                 docker rmi ${env.DOCKER_REGISTRY}/backend:${BUILD_NUMBER} || true
+        //                 docker rmi ${env.DOCKER_REGISTRY}/frontend:${BUILD_NUMBER} || true
+        //             """
+        //         } catch (Exception e) {
+        //             echo "Warning: Failed to cleanup Docker images: ${e.getMessage()}"
+        //         }
+        //     }
+        // }
     }
 }
