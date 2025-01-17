@@ -53,6 +53,26 @@ pipeline {
             }
         }
 
+        stage('Install System Dependencies') {
+            steps {
+                // Run as root to install system packages
+                sh '''
+            echo "Installing system dependencies for Cypress..."
+            apt-get update && \
+            apt-get install -y xvfb \
+                libgtk2.0-0 \
+                libgtk-3-0 \
+                libgbm-dev \
+                libnotify-dev \
+                libgconf-2-4 \
+                libnss3 \
+                libxss1 \
+                libasound2 \
+                libxtst6
+        '''
+            }
+        }
+        
         stage('Install Dependencies') {
             parallel {
                 stage('Backend Dependencies') {

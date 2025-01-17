@@ -1,4 +1,4 @@
-# Build stage for clienttttttt
+# Build stage for clientttttttttt
 FROM node:22 as build
 WORKDIR /app
 COPY package*.json ./
