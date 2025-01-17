@@ -54,16 +54,53 @@ pipeline {
         }
 
 
-        stage('Root Dependencies') {
+//         stage('Root Dependencies') {
+//     steps {
+//         dir('COSC2767-RMIT-Store-main') {
+//             sh '''
+//                 echo "Installing root level dependencies..."
+//                 rm -rf node_modules package-lock.json
+                
+//                 # Install dependencies
+//                 npm install
+//                 npm install --save-dev cypress
+//                 npm install --save-dev npm-run-all
+//             '''
+//         }
+//     }
+// }
+
+stage('Root Dependencies') {
     steps {
         dir('COSC2767-RMIT-Store-main') {
             sh '''
+                echo "Current user and directory:"
+                whoami
+                pwd
+                
+                echo "Checking npm installation:"
+                which npm
+                npm -v
+                
                 echo "Installing root level dependencies..."
+                # First try to fix npm permissions if needed
+                mkdir -p ~/.npm-global
+                npm config set prefix '~/.npm-global'
+                export PATH=~/.npm-global/bin:$PATH
+                
+                # Clean existing
                 rm -rf node_modules package-lock.json
                 
-                # Install dependencies
+                # Install npm-run-all first
+                npm install --save-dev npm-run-all
+                
+                # Then install other dependencies
                 npm install
                 npm install --save-dev cypress
+                
+                # Verify installations
+                echo "Verifying installations:"
+                ls node_modules/.bin/
             '''
         }
     }
