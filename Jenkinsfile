@@ -53,6 +53,20 @@ pipeline {
             }
         }
 
+
+        stage('Root Dependencies') {
+            steps {
+                dir('COSC2767-RMIT-Store-main') {
+                    sh '''
+                    echo "Installing root level dependencies..."
+                    rm -rf node_modules package-lock.json
+                    npm install
+                    npm install --save-dev cypress
+                '''
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             parallel {
                 stage('Backend Dependencies') {
@@ -115,28 +129,16 @@ pipeline {
                         }
                     }
                 }
-                // stage('Frontend Tests') {
-                //     when {
-                //         expression { env.FRONTEND_CHANGED == 'true' }
-                //     }
-                //     steps {
-                //         dir('client') {
-                //             sh '''
-                //                 npm run cy:run
-                //             '''
-                //         }
-                //     }
-                // }
-
                 stage('Frontend Tests') {
-                    agent {
-                        docker {
-                            image 'cypress/included:latest'
-                            args '--privileged'
-                        }
+                    when {
+                        expression { env.FRONTEND_CHANGED == 'true' }
                     }
                     steps {
-                        sh 'npm run cy:run'
+                        dir('client') {
+                            sh '''
+                                npm run cy:run
+                            '''
+                        }
                     }
                 }
             }
