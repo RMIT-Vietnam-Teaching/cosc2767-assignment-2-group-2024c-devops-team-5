@@ -61,6 +61,11 @@ pipeline {
                 echo "Installing root level dependencies..."
                 rm -rf node_modules package-lock.json
                 
+                echo "Adding sudo capability..."
+                apt-get update && apt-get install -y sudo
+
+                echo "Installing system dependencies for Cypress..."
+                sudo apt-get update && sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6
                 # Install npm-run-all globally first
                 npm install -g npm-run-all
                 
