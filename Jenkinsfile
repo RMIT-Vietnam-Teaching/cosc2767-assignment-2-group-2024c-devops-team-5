@@ -81,23 +81,29 @@ pipeline {
                     }
                     steps {
                         dir('client') {
+                            // Run commands that need root privileges
                             sh '''
-                             echo "Current user:"
+                echo "Current user before switching:"
                 whoami
-                
-                echo "Installing system dependencies..."
-                # Try with sudo first
-                sudo apt-get update && sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 || \
-                # If sudo fails, try switching to root
-                (su root -c "apt-get update && apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6")
+            '''
 
+                            // Use Jenkins' built-in way to run as root
+                            wrap([$class: 'BuildUser']) {
+                                sh '''#!/bin/bash
+                    echo "Installing system dependencies as root..."
+                    apt-get update
+                    apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6
+                '''
+                            }
+
+                            // Continue with npm commands as jenkins user
+                            sh '''
                 echo "Installing frontend dependencies..."
                 npm install
                 npm install -g cypress
                 npx cypress verify
                 npx cypress install
-                
-                            '''
+            '''
                         }
                     }
                 }
