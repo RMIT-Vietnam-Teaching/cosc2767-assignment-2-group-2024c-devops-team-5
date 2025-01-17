@@ -1,5 +1,5 @@
 
-# docker compose for clientttttttt
+# docker compose for clientttttttttt
 # check CI
 version: '3.8'
 services:

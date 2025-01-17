@@ -126,7 +126,6 @@ pipeline {
                     steps {
                         dir('client') {
                             sh '''
-                                node -p "process.arch"
                                 npm run cy:run
                             '''
                         }
