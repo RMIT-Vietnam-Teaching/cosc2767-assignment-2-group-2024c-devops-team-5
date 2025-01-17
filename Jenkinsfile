@@ -53,62 +53,93 @@ pipeline {
             }
         }
 
+        // stage('Install Dependencies') {
+        //     parallel {
+        //         stage('Backend Dependencies') {
+        //             when {
+        //                 expression { env.BACKEND_CHANGED == 'true' }
+        //             }
+        //             steps {
+        //                 dir('server') {
+        //                     sh '''
+        //                       echo "Cleaning existing dependencies..."
+        //         rm -rf node_modules package-lock.json
+
+        //         echo "Installing all dependencies first..."
+        //         npm install
+
+        //         echo "Installing test dependencies explicitly..."
+        //         npm install --save-dev jest
+        //         npm install --save-dev supertest
+        //                     '''
+        //                 }
+        //             }
+        //         }
+        //         stage('Frontend Dependencies') {
+        //             when {
+        //                 expression { env.FRONTEND_CHANGED == 'true' }
+        //             }
+        //             steps {
+        //                 dir('client') {
+        //                     sh '''
+        //                         echo "Installing frontend dependencies..."
+        //                         rm -rf node_modules package-lock.json
+        //                         npm install
+        //                     '''
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         stage('Install Dependencies') {
-            parallel {
-                stage('Backend Dependencies') {
-                    when {
-                        expression { env.BACKEND_CHANGED == 'true' }
-                    }
-                    steps {
-                        dir('server') {
-                            sh '''
-                              echo "Cleaning existing dependencies..."
-                rm -rf node_modules package-lock.json
-
-                echo "Installing all dependencies first..."
-                npm install
-
-                echo "Installing test dependencies explicitly..."
-                npm install --save-dev jest
-                npm install --save-dev supertest
-                            '''
-                        }
-                    }
-                }
-                stage('Frontend Dependencies') {
-                    when {
-                        expression { env.FRONTEND_CHANGED == 'true' }
-                    }
-                    steps {
-                        dir('client') {
-                            // Run commands that need root privileges
-                            sh '''
-                echo "Current user before switching:"
-                whoami
-            '''
-
-                            // Use Jenkins' built-in way to run as root
-                            wrap([$class: 'BuildUser']) {
-                                sh '''#!/bin/bash
-                    echo "Installing system dependencies as root..."
-                    apt-get update
-                    apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6
+    parallel {
+        stage('Root Dependencies') {
+            steps {
+                sh '''
+                    echo "Installing root level dependencies..."
+                    rm -rf node_modules package-lock.json
+                    npm install
+                    npm install --save-dev cypress
                 '''
-                            }
+            }
+        }
+        stage('Backend Dependencies') {
+            when {
+                expression { env.BACKEND_CHANGED == 'true' }
+            }
+            steps {
+                dir('server') {
+                    sh '''
+                        echo "Cleaning existing dependencies..."
+                        rm -rf node_modules package-lock.json
 
-                            // Continue with npm commands as jenkins user
-                            sh '''
-                echo "Installing frontend dependencies..."
-                npm install
-                npm install -g cypress
-                npx cypress verify
-                npx cypress install
-            '''
-                        }
-                    }
+                        echo "Installing all dependencies first..."
+                        npm install
+
+                        echo "Installing test dependencies explicitly..."
+                        npm install --save-dev jest
+                        npm install --save-dev supertest
+                    '''
                 }
             }
         }
+        stage('Frontend Dependencies') {
+            when {
+                expression { env.FRONTEND_CHANGED == 'true' }
+            }
+            steps {
+                dir('client') {
+                    sh '''
+                        echo "Installing frontend dependencies..."
+                        rm -rf node_modules package-lock.json
+                        npm install
+                    '''
+                }
+            }
+        }
+    }
+}
 
         stage('Run Tests') {
             parallel {
