@@ -122,7 +122,9 @@ pipeline {
                     }
                     steps {
                         dir('client') {
-                            sh 'CI=true npm test'
+                            sh '''
+                                npm run cy:run
+                            '''
                         }
                     }
                 }
