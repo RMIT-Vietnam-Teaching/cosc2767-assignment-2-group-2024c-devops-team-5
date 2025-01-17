@@ -84,10 +84,10 @@ pipeline {
                             sh '''
                                 echo "Installing frontend dependencies..."
                                 rm -rf node_modules package-lock.json
-                                npm install 
-
-                                npm install --save-dev cypress
-                                npm install cypress
+                                npm install
+                                npm install -g cypress
+                                npx cypress verify
+                                npx cypress install
                             '''
                         }
                     }
@@ -123,6 +123,7 @@ pipeline {
                     steps {
                         dir('client') {
                             sh '''
+                                node -p "process.arch"
                                 npm run cy:run
                             '''
                         }
