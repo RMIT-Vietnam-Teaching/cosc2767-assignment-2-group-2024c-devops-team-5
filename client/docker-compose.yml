@@ -1,5 +1,5 @@
 
-# docker compose for clientttt
+# docker compose for clienttt
 # check CI
 version: '3.8'
 services:
