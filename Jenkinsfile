@@ -66,7 +66,7 @@ pipeline {
                 apt-get update && apt-get install -y sudo
 
                 echo "Installing system dependencies for Cypress..."
-                sudo apt-get install -y xvfb
+                apt-get install -y xvfb
                 which xvfb-run || echo "xvfb-run not found"
                 # Install npm-run-all globally first
                 npm install -g npm-run-all
