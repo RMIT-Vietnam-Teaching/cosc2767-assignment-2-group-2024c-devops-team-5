@@ -64,7 +64,6 @@ pipeline {
                 # Install dependencies
                 npm install
                 npm install --save-dev cypress
-                npm install --save-dev npm-run-all
             '''
         }
     }
