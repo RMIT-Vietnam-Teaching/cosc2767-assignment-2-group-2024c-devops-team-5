@@ -147,7 +147,11 @@ pipeline {
                     steps {
                         dir('client') {
                             sh '''
-                                npm run cy:run
+                                echo "Node Architecture:"
+                node -p "process.arch"
+                
+                echo "Running Cypress tests with Xvfb..."
+                xvfb-run --server-args="-screen 0 1280x720x24" npm run cy:run
                             '''
                         }
                     }
