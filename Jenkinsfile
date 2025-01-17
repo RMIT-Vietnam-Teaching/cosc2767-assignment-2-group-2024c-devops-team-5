@@ -70,41 +70,41 @@ pipeline {
 //     }
 // }
 
-stage('Root Dependencies') {
-    steps {
-        dir('COSC2767-RMIT-Store-main') {
-            sh '''
-                echo "Current user and directory:"
-                whoami
-                pwd
+// stage('Root Dependencies') {
+//     steps {
+//         dir('COSC2767-RMIT-Store-main') {
+//             sh '''
+//                 echo "Current user and directory:"
+//                 whoami
+//                 pwd
                 
-                echo "Checking npm installation:"
-                which npm
-                npm -v
+//                 echo "Checking npm installation:"
+//                 which npm
+//                 npm -v
                 
-                echo "Installing root level dependencies..."
-                # First try to fix npm permissions if needed
-                mkdir -p ~/.npm-global
-                npm config set prefix '~/.npm-global'
-                export PATH=~/.npm-global/bin:$PATH
+//                 echo "Installing root level dependencies..."
+//                 # First try to fix npm permissions if needed
+//                 mkdir -p ~/.npm-global
+//                 npm config set prefix '~/.npm-global'
+//                 export PATH=~/.npm-global/bin:$PATH
                 
-                # Clean existing
-                rm -rf node_modules package-lock.json
+//                 # Clean existing
+//                 rm -rf node_modules package-lock.json
                 
-                # Install npm-run-all first
-                npm install --save-dev npm-run-all
+//                 # Install npm-run-all first
+//                 npm install --save-dev npm-run-all
                 
-                # Then install other dependencies
-                npm install
-                npm install --save-dev cypress
+//                 # Then install other dependencies
+//                 npm install
+//                 npm install --save-dev cypress
                 
-                # Verify installations
-                echo "Verifying installations:"
-                ls node_modules/.bin/
-            '''
-        }
-    }
-}
+//                 # Verify installations
+//                 echo "Verifying installations:"
+//                 ls node_modules/.bin/
+//             '''
+//         }
+//     }
+// }
 
         stage('Install Dependencies') {
             parallel {
