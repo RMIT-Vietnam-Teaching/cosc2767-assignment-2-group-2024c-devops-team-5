@@ -84,7 +84,10 @@ pipeline {
                             sh '''
                                 echo "Installing frontend dependencies..."
                                 rm -rf node_modules package-lock.json
-                                npm install --legacy-peer-deps
+                                npm install 
+
+                                npm install --save-dev cypress
+                                npm install cypress
                             '''
                         }
                     }
