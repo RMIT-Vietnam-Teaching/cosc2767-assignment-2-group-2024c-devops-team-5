@@ -60,12 +60,14 @@ pipeline {
             sh '''
                 echo "Installing root level dependencies..."
                 rm -rf node_modules package-lock.json
-                
+                whoami
+                ls -l /var/run/docker.sock || true
                 echo "Adding sudo capability..."
                 apt-get update && apt-get install -y sudo
 
                 echo "Installing system dependencies for Cypress..."
-                sudo apt-get update && sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6
+                sudo apt-get install -y xvfb
+                which xvfb-run || echo "xvfb-run not found"
                 # Install npm-run-all globally first
                 npm install -g npm-run-all
                 
