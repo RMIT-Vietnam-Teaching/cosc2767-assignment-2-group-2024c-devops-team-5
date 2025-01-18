@@ -120,10 +120,6 @@ pipeline {
 
                 echo "Installing all dependencies first..."
                 npm install
-
-                echo "Installing test dependencies explicitly..."
-                npm install --save-dev jest
-                npm install --save-dev supertest
                             '''
                         }
                     }
