@@ -305,6 +305,39 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+    steps {
+        script {
+            // First, we'll write the PEM file from Jenkins credentials
+            withCredentials([file(credentialsId: 'ansible-pem', variable: 'PEM_FILE')]) {
+                // Create a temporary directory for the key
+                sh 'mkdir -p ~/.ssh'
+                // Copy the PEM file and set correct permissions
+                sh '''
+                    cp "$PEM_FILE" ~/.ssh/lab2.pem
+                    chmod 400 ~/.ssh/lab2.pem
+                '''
+                
+                try {
+                    // Connect to Ansible server and run commands
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no -i ~/.ssh/lab2.pem ubuntu@34.194.109.53 '
+                            ansible all -m ping -i inventory.yml
+                            ansible-playbook -i inventory.yml deploy-swarm.yml
+                        '
+                    '''
+                } catch (Exception e) {
+                    echo "Warning: Deployment failed: ${e.getMessage()}"
+                    currentBuild.result = 'FAILURE'
+                } finally {
+                    // Clean up the PEM file
+                    sh 'rm -f ~/.ssh/lab2.pem'
+                }
+            }
+        }
+    }
+}
     }
 
     post {
