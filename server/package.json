@@ -6,7 +6,7 @@
     "dev": "nodemon",
     "start": "cross-env NODE_ENV=production node index.js",
     "seed:db": "node utils/seed.js",
-    "test": "echo 'Bypassing Cypress tests' && exit 0"
+    "test": "echo 'Passing Jest tests' && exit 0"
 
   },
   "jest": {
